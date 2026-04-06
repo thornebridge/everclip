@@ -2,12 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>everclip. — Never lose a copy again</title>
-<meta name="description" content="The clipboard manager your Mac deserves. Native Swift, Apple Silicon, free & open source.">
+
+<!-- SEO -->
+<meta name="description" content="The clipboard manager your Mac deserves. Native Swift, optimized for Apple Silicon, 100% free and open source. Save unlimited clipboard entries, organize with pinboards and smart rules, paste with transformations. Your data never leaves your machine.">
+<meta name="keywords" content="clipboard manager, macOS, Mac, clipboard history, paste manager, Apple Silicon, Swift, open source, free, productivity, pinboard, smart rules, paste stack, text expansion">
+<meta name="author" content="Thornebridge">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#00ff87">
+<link rel="canonical" href="https://thornebridge.github.io/everclip/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thornebridge.github.io/everclip/">
 <meta property="og:title" content="everclip. — Never lose a copy again">
-<meta property="og:description" content="Free, open-source clipboard manager built natively for macOS and Apple Silicon.">
+<meta property="og:description" content="The clipboard manager your Mac deserves. Native Swift, Apple Silicon, free &amp; open source. Save unlimited entries. Your data never leaves your machine.">
+<meta property="og:image" content="https://thornebridge.github.io/everclip/assets/og.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="everclip. — Never lose a copy again. Native Swift, Apple Silicon, free and open source.">
+<meta property="og:site_name" content="everclip.">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="everclip. — Never lose a copy again">
+<meta name="twitter:description" content="Native clipboard manager for macOS. Built on Swift for Apple Silicon. Free, open source, 100% local.">
+<meta name="twitter:image" content="https://thornebridge.github.io/everclip/assets/og.svg">
+<meta name="twitter:image:alt" content="everclip. — Never lose a copy again">
+
+<!-- Icons -->
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon.svg">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "EverClip",
+  "description": "The clipboard manager your Mac deserves. Native Swift, optimized for Apple Silicon, 100% free and open source.",
+  "url": "https://thornebridge.github.io/everclip/",
+  "downloadUrl": "https://github.com/thornebridge/everclip/releases",
+  "operatingSystem": "macOS 14+",
+  "applicationCategory": "UtilitiesApplication",
+  "softwareVersion": "2.0.0",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "Thornebridge",
+    "url": "https://thornebridge.tech"
+  },
+  "license": "https://opensource.org/licenses/MIT",
+  "programmingLanguage": "Swift",
+  "isAccessibleForFree": true
+}
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -128,11 +183,73 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
 .r-d1{transition-delay:0.08s}.r-d2{transition-delay:0.16s}.r-d3{transition-delay:0.24s}.r-d4{transition-delay:0.32s}
 
 /* ─── Responsive ─────────────────── */
+
+/* Tablet */
+@media(max-width:900px){
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .shortcut-grid{grid-template-columns:repeat(2,1fr)}
+  .dark-section{margin:60px 0}
+}
+
+/* Large phone / small tablet */
 @media(max-width:640px){
-  .hero h1{letter-spacing:-2px}
-  .numbers-row{gap:32px}
-  .hero .badges{flex-wrap:wrap;justify-content:center}
-  .hero .sub-cta{display:block;margin:16px auto 0}
+  .container{padding:0 16px}
+  nav .inner{padding:0 16px}
+  .hero{padding:56px 0 40px}
+  .hero h1{letter-spacing:-2px;font-size:clamp(40px,10vw,52px)}
+  .hero-glow{width:400px;height:400px;top:-80px}
+  .hero p{font-size:16px;margin-bottom:28px}
+  .hero .cta{width:100%;justify-content:center;padding:14px 24px;font-size:15px}
+  .hero .sub-cta{display:flex;justify-content:center;margin:12px 0 0;width:100%}
+  .hero .badges{flex-wrap:wrap;justify-content:center;gap:16px 20px;font-size:11px}
+  .demo::before,.demo::after{width:48px}
+  .card{width:170px;padding:12px}
+  .card .body{min-height:48px;font-size:10px}
+  .feat{padding:64px 0 48px}
+  .feat h2{font-size:clamp(26px,7vw,36px);margin-bottom:32px}
+  .feat-grid{grid-template-columns:1fr;gap:1px}
+  .feat-item{padding:24px 20px}
+  .feat-item p{font-size:13px}
+  .numbers{padding:48px 0}
+  .numbers-row{gap:24px 40px}
+  .num .val{font-size:clamp(36px,10vw,48px)}
+  .keys-section{padding:48px 0}
+  .keys-section h2{font-size:clamp(24px,6vw,32px);margin-bottom:32px}
+  .key-row{gap:6px;margin-bottom:28px}
+  .k{padding:10px 16px;font-size:18px;min-width:44px;border-radius:10px}
+  .shortcut-grid{grid-template-columns:1fr 1fr;gap:4px}
+  .sc{padding:8px 10px}
+  .sc .what{font-size:11px}
+  .dark-section{padding:64px 0;margin:48px 0}
+  .dark-section h2{font-size:clamp(24px,6vw,32px)}
+  .dark-section p{font-size:14px}
+  .btn-src{padding:12px 24px;font-size:14px}
+}
+
+/* Small phone */
+@media(max-width:380px){
+  .hero h1{font-size:36px}
+  .hero .badges{gap:12px 16px}
+  .numbers-row{flex-direction:column;gap:20px}
+  .shortcut-grid{grid-template-columns:1fr}
+  .card{width:150px}
+}
+
+/* Remove hover effects on touch devices */
+@media(hover:none){
+  .card:hover{transform:none;box-shadow:none}
+  .feat-item:hover{background:var(--surface)}
+  .feat-item:hover .icon{transform:none}
+  .hero .cta:hover{transform:none;box-shadow:none}
+  .hero .cta:hover::before{opacity:0}
+  .hero .cta:hover{color:#fff}
+  .btn-src:hover{transform:none;box-shadow:none}
+}
+
+/* Safe area for notched devices */
+@supports(padding: env(safe-area-inset-bottom)){
+  footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+  nav .inner{padding-left:calc(24px + env(safe-area-inset-left));padding-right:calc(24px + env(safe-area-inset-right))}
 }
 </style>
 </head>
@@ -180,7 +297,7 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
   <div class="track" id="track"></div>
 </section>
 
-<section class="feat" id="features">
+<section class="feat" id="features" aria-label="Features">
   <div class="container">
     <div class="label r">What it does</div>
     <h2 class="r r-d1">Everything you copy,<br><em>organized forever.</em></h2>
@@ -208,7 +325,7 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
   </div>
 </section>
 
-<section class="keys-section r" id="shortcuts">
+<section class="keys-section r" id="shortcuts" aria-label="Keyboard shortcuts">
   <div class="container">
     <h2>Keyboard-first.<br>Always.</h2>
     <div class="key-row">
@@ -229,7 +346,7 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
   </div>
 </section>
 
-<section class="dark-section">
+<section class="dark-section" aria-label="Platform and open source">
   <div class="container r">
     <div class="chip">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -305,16 +422,18 @@ const numObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
 }})},{threshold:0.3});
 numObs.observe(document.querySelector('.numbers'));
 
-// ─── Tilt cards on mouse ─────────────
-document.querySelectorAll('.card').forEach(card=>{
-  card.addEventListener('mousemove',e=>{
-    const r=card.getBoundingClientRect();
-    const x=(e.clientX-r.left)/r.width-.5;
-    const y=(e.clientY-r.top)/r.height-.5;
-    card.style.transform=`translateY(-8px) scale(1.02) perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg)`;
+// ─── Tilt cards on mouse (desktop only) ─────────────
+if(window.matchMedia('(hover:hover)').matches){
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`translateY(-8px) scale(1.02) perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg)`;
+    });
+    card.addEventListener('mouseleave',()=>{card.style.transform=''});
   });
-  card.addEventListener('mouseleave',()=>{card.style.transform=''});
-});
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thornebridge.github.io/everclip/sitemap.xml

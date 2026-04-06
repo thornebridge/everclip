@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#fafafa"/>
+  <rect x="0" y="0" width="1200" height="630" fill="url(#glow)" opacity="0.4"/>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:rgba(0,255,135,0.15)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+  </defs>
+  <!-- Wordmark -->
+  <text x="600" y="240" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,SF Pro Display,Helvetica,Arial,sans-serif" font-size="72" font-weight="900" fill="#111" letter-spacing="-2">everclip<tspan fill="#00ff87">.</tspan></text>
+  <!-- Tagline -->
+  <text x="600" y="320" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,SF Pro Display,Helvetica,Arial,sans-serif" font-size="32" fill="#555" font-weight="500">Never lose a copy again.</text>
+  <!-- Subtitle -->
+  <text x="600" y="380" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,SF Pro Display,Helvetica,Arial,sans-serif" font-size="20" fill="#999" font-weight="500">Native Swift · Apple Silicon · Free &amp; Open Source</text>
+  <!-- Powered by -->
+  <text x="600" y="560" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,SF Pro Display,Helvetica,Arial,sans-serif" font-size="14" fill="#bbb" font-weight="600" letter-spacing="0.5">POWERED BY THORNEBRIDGE</text>
+</svg>
