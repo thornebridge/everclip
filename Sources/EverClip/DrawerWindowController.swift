@@ -25,11 +25,12 @@ final class DrawerWindowController {
         previousApp = NSWorkspace.shared.frontmostApplication
 
         let screen = screenUnderMouse()
-        let frame = screen.frame
-        let width = frame.width - edgePadding * 2
-        let startY = frame.origin.y - drawerHeight
-        let endY = frame.origin.y + edgePadding
-        let x = frame.origin.x + edgePadding
+        // Use visibleFrame to respect dock and menu bar positioning
+        let visible = screen.visibleFrame
+        let width = visible.width - edgePadding * 2
+        let startY = visible.origin.y - drawerHeight
+        let endY = visible.origin.y + edgePadding
+        let x = visible.origin.x + edgePadding
 
         let startFrame = NSRect(x: x, y: startY, width: width, height: drawerHeight)
         let endFrame   = NSRect(x: x, y: endY,   width: width, height: drawerHeight)
@@ -60,7 +61,7 @@ final class DrawerWindowController {
 
         let hideFrame = NSRect(
             x: panel.frame.origin.x,
-            y: screen.frame.origin.y - drawerHeight,
+            y: screen.visibleFrame.origin.y - drawerHeight,
             width: panel.frame.width,
             height: drawerHeight
         )
