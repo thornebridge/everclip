@@ -3,449 +3,318 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EverClip — The clipboard manager your Mac deserves</title>
-<meta name="description" content="EverClip is a free, open-source, native clipboard manager for macOS. Built on Swift for Apple Silicon. Your data never leaves your machine.">
-<meta property="og:title" content="EverClip — Never forget a copy again">
+<title>everclip. — Never lose a copy again</title>
+<meta name="description" content="The clipboard manager your Mac deserves. Native Swift, Apple Silicon, free & open source.">
+<meta property="og:title" content="everclip. — Never lose a copy again">
 <meta property="og:description" content="Free, open-source clipboard manager built natively for macOS and Apple Silicon.">
-<meta property="og:image" content="https://thornebridge.github.io/everclip/assets/icon.svg">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --text:#1a1a2e;--text-secondary:#64748b;--text-tertiary:#94a3b8;
-  --bg:#fafafa;--surface:#ffffff;--border:#e2e8f0;
-  --indigo:#6366f1;--violet:#8b5cf6;--emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;--cyan:#06b6d4;
-  --radius:16px;--radius-sm:10px;
+  --green:#00ff87;--green-dim:#00cc6a;--green-glow:rgba(0,255,135,0.15);
+  --text:#111;--text-2:#555;--text-3:#999;
+  --bg:#fafafa;--surface:#fff;--border:rgba(0,0,0,0.06);
+  --radius:16px;
 }
-html{scroll-behavior:smooth;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+html{scroll-behavior:smooth;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;color:var(--text);background:var(--bg)}
 body{overflow-x:hidden;-webkit-font-smoothing:antialiased}
-a{color:var(--indigo);text-decoration:none}
-.container{max-width:1120px;margin:0 auto;padding:0 24px}
+a{color:inherit;text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
 
-/* ─── Nav ──────────────────────────────── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(250,250,250,0.8);border-bottom:1px solid var(--border)}
-nav .inner{display:flex;align-items:center;justify-content:space-between;height:56px;max-width:1120px;margin:0 auto;padding:0 24px}
-nav .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-0.3px}
-nav .logo img{width:28px;height:28px;border-radius:6px}
-nav .links{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:500;color:var(--text-secondary)}
-nav .links a:hover{color:var(--text)}
-nav .cta-sm{background:var(--text);color:#fff;padding:8px 18px;border-radius:8px;font-weight:600;font-size:13px;transition:transform 0.2s,box-shadow 0.2s}
-nav .cta-sm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+/* ─── Nav ────────────────────────── */
+nav{padding:20px 0}
+nav .inner{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:0 24px}
+.wordmark{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.wordmark .dot{color:var(--green)}
+nav .icons{display:flex;align-items:center;gap:16px}
+nav .icons a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;color:var(--text-3);transition:all 0.2s}
+nav .icons a:hover{background:var(--border);color:var(--text)}
+nav .icons a svg{width:18px;height:18px}
 
-/* ─── Hero ─────────────────────────────── */
-.hero{padding:140px 0 80px;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(99,102,241,0.06) 0%,transparent 70%);pointer-events:none}
-.hero .badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.15);border-radius:100px;padding:6px 16px;font-size:13px;font-weight:500;color:var(--indigo);margin-bottom:24px}
-.hero .badge .dot{width:6px;height:6px;background:var(--emerald);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.hero h1{font-size:clamp(42px,6vw,72px);font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:20px;background:linear-gradient(135deg,var(--text) 0%,#334155 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:clamp(16px,2vw,20px);color:var(--text-secondary);max-width:580px;margin:0 auto 36px;line-height:1.6}
-.hero .actions{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--text);color:#fff;padding:14px 32px;border-radius:12px;font-weight:600;font-size:16px;transition:all 0.25s;border:none;cursor:pointer}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.18)}
-.btn-primary svg{width:18px;height:18px}
-.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:var(--surface);color:var(--text);padding:14px 32px;border-radius:12px;font-weight:600;font-size:16px;border:1px solid var(--border);transition:all 0.25s}
-.btn-secondary:hover{border-color:var(--text-tertiary);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
-.hero .meta{display:flex;justify-content:center;gap:32px;margin-top:40px;font-size:13px;color:var(--text-tertiary);font-weight:500}
-.hero .meta span{display:flex;align-items:center;gap:6px}
+/* ─── Hero ───────────────────────── */
+.hero{padding:80px 0 60px;text-align:center;position:relative}
+.hero-glow{position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,var(--green-glow) 0%,transparent 65%);pointer-events:none;animation:glow-breathe 6s ease-in-out infinite}
+@keyframes glow-breathe{0%,100%{opacity:0.6;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+.hero h1{font-size:clamp(52px,8vw,88px);font-weight:900;letter-spacing:-3px;line-height:1;margin-bottom:24px;position:relative}
+.hero h1 .line2{display:block;background:linear-gradient(135deg,var(--green-dim),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(16px,2vw,19px);color:var(--text-2);max-width:480px;margin:0 auto 40px;line-height:1.65}
+.hero .cta{display:inline-flex;align-items:center;gap:10px;background:#111;color:#fff;padding:16px 36px;border-radius:14px;font-weight:700;font-size:16px;transition:all 0.3s;position:relative;overflow:hidden}
+.hero .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--green),#00cc6a);opacity:0;transition:opacity 0.3s}
+.hero .cta:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,255,135,0.2)}
+.hero .cta:hover::before{opacity:1}
+.hero .cta span,.hero .cta svg{position:relative;z-index:1}
+.hero .cta:hover{color:#000}
+.hero .sub-cta{display:inline-flex;align-items:center;gap:6px;margin-left:16px;color:var(--text-3);font-size:14px;font-weight:500;transition:color 0.2s}
+.hero .sub-cta:hover{color:var(--text)}
+.hero .badges{display:flex;justify-content:center;gap:28px;margin-top:48px;font-size:12px;color:var(--text-3);font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
+.hero .badges span{display:flex;align-items:center;gap:6px}
+.hero .badges .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,135,0.4)}70%{box-shadow:0 0 0 8px rgba(0,255,135,0)}}
 
-/* ─── Demo (interactive clipboard strip) ── */
-.demo-section{padding:40px 0 80px;overflow:hidden}
-.demo-strip{display:flex;gap:16px;padding:20px 0;animation:scroll-strip 30s linear infinite}
-.demo-strip:hover{animation-play-state:paused}
-@keyframes scroll-strip{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.demo-card{flex-shrink:0;width:200px;height:160px;background:var(--surface);border-radius:var(--radius-sm);border:1.5px solid var(--border);padding:14px;display:flex;flex-direction:column;transition:all 0.3s;cursor:default;position:relative;overflow:hidden}
-.demo-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 32px rgba(0,0,0,0.08)}
-.demo-card .card-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;gap:4px}
-.demo-card .card-body{flex:1;font-size:11px;line-height:1.5;color:var(--text-secondary);overflow:hidden}
-.demo-card .card-footer{font-size:9px;color:var(--text-tertiary);display:flex;justify-content:space-between;margin-top:8px}
-.demo-card.type-text{border-top:3px solid var(--indigo)}
-.demo-card.type-text .card-type{color:var(--indigo)}
-.demo-card.type-link{border-top:3px solid var(--emerald)}
-.demo-card.type-link .card-type{color:var(--emerald)}
-.demo-card.type-code{border-top:3px solid var(--amber)}
-.demo-card.type-code .card-type{color:var(--amber)}
-.demo-card.type-image{border-top:3px solid var(--violet)}
-.demo-card.type-image .card-type{color:var(--violet)}
-.demo-card.type-color{border-top:3px solid var(--rose)}
-.demo-card.type-color .card-type{color:var(--rose)}
-.demo-card.type-md{border-top:3px solid var(--cyan)}
-.demo-card.type-md .card-type{color:var(--cyan)}
-.demo-card .code-block{font-family:'SF Mono',Menlo,monospace;font-size:10px;background:rgba(0,0,0,0.03);padding:6px 8px;border-radius:6px;line-height:1.4}
-.demo-card .color-swatch{width:32px;height:32px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
-.demo-card .img-placeholder{background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border-radius:8px;flex:1;display:flex;align-items:center;justify-content:center;color:var(--indigo);font-size:20px}
+/* ─── Floating cards demo ────────── */
+.demo{padding:40px 0 60px;overflow:hidden;position:relative}
+.demo::before,.demo::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none}
+.demo::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.demo::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.track{display:flex;gap:14px;width:max-content;animation:drift 40s linear infinite}
+.track:hover{animation-play-state:paused}
+@keyframes drift{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.card{flex-shrink:0;width:210px;background:var(--surface);border:1px solid rgba(0,0,0,0.05);border-radius:14px;padding:16px;transition:all 0.35s cubic-bezier(0.16,1,0.3,1);cursor:default;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(0,0,0,0.08)}
+.card .accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.card .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card .type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:4px}
+.card .time{font-size:9px;color:var(--text-3)}
+.card .body{font-size:11px;line-height:1.55;color:var(--text-2);min-height:60px;overflow:hidden}
+.card .foot{margin-top:10px;font-size:9px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+.card .foot .app-dot{width:8px;height:8px;border-radius:3px}
+.card .mono{font-family:'SF Mono',Menlo,monospace;font-size:10px;background:rgba(0,0,0,0.03);padding:8px 10px;border-radius:8px;line-height:1.45}
+.card .swatch{width:28px;height:28px;border-radius:7px;border:1px solid rgba(0,0,0,0.06)}
+.card .img-ph{background:linear-gradient(135deg,#f0f0f0,#e8e8e8);border-radius:8px;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#ccc}
 
-/* ─── Features ─────────────────────────── */
-.features{padding:80px 0}
-.section-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--indigo);margin-bottom:12px}
-.section-title{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1px;margin-bottom:16px}
-.section-subtitle{font-size:17px;color:var(--text-secondary);max-width:520px;line-height:1.6;margin-bottom:56px}
-.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
-.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:all 0.3s}
-.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,0.06);border-color:transparent}
-.feature-card .icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
-.feature-card h3{font-size:16px;font-weight:700;margin-bottom:8px;letter-spacing:-0.3px}
-.feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+/* ─── Features ───────────────────── */
+.feat{padding:100px 0 80px}
+.feat .label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--green-dim);margin-bottom:12px}
+.feat h2{font-size:clamp(32px,5vw,50px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:56px}
+.feat h2 em{font-style:normal;color:var(--green-dim)}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.feat-item{background:var(--surface);padding:32px 28px;transition:all 0.4s}
+.feat-item:hover{background:rgba(0,255,135,0.02)}
+.feat-item .icon{font-size:24px;margin-bottom:14px;display:block;transition:transform 0.3s}
+.feat-item:hover .icon{transform:scale(1.15) rotate(-3deg)}
+.feat-item h3{font-size:15px;font-weight:700;margin-bottom:6px;letter-spacing:-0.2px}
+.feat-item p{font-size:13px;color:var(--text-2);line-height:1.6}
 
-/* ─── Stats ────────────────────────────── */
-.stats{padding:60px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
-.stat .number{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--indigo),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stat .label{font-size:13px;color:var(--text-tertiary);margin-top:4px;font-weight:500}
+/* ─── Numbers ────────────────────── */
+.numbers{padding:80px 0;text-align:center}
+.numbers-row{display:flex;justify-content:center;gap:60px;flex-wrap:wrap}
+.num .val{font-size:clamp(40px,6vw,64px);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--green-dim),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.num .lbl{font-size:12px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
 
-/* ─── Open Source ──────────────────────── */
-.oss{padding:80px 0;text-align:center}
-.oss-card{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;border-radius:24px;padding:56px 40px;max-width:800px;margin:0 auto;position:relative;overflow:hidden}
-.oss-card::before{content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(99,102,241,0.2),transparent 70%);pointer-events:none}
-.oss-card h2{font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-1px;margin-bottom:16px}
-.oss-card p{font-size:16px;color:rgba(255,255,255,0.7);max-width:500px;margin:0 auto 32px;line-height:1.6}
-.oss-card .btn-gh{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;transition:all 0.25s;backdrop-filter:blur(10px)}
-.oss-card .btn-gh:hover{background:rgba(255,255,255,0.18);transform:translateY(-2px)}
-.oss-card .btn-gh svg{width:18px;height:18px}
+/* ─── Keys ───────────────────────── */
+.keys-section{padding:80px 0;text-align:center}
+.keys-section h2{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-1.5px;margin-bottom:48px}
+.key-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:40px}
+.k{background:var(--surface);border:1.5px solid rgba(0,0,0,0.08);border-bottom:4px solid rgba(0,0,0,0.1);border-radius:12px;padding:14px 22px;font-size:22px;font-weight:800;min-width:56px;text-align:center;transition:all 0.12s;font-family:-apple-system,system-ui}
+.k.pop{transform:translateY(3px);border-bottom-width:1.5px;background:rgba(0,255,135,0.08);border-color:var(--green);box-shadow:0 0 20px rgba(0,255,135,0.15)}
+.k-plus{font-size:16px;color:var(--text-3);font-weight:700}
+.shortcut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;max-width:740px;margin:0 auto}
+.sc{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;transition:background 0.2s}
+.sc:hover{background:rgba(0,0,0,0.02)}
+.sc .combo{display:flex;gap:3px}
+.sc .combo span{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.06);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;font-family:-apple-system,system-ui}
+.sc .what{font-size:12px;color:var(--text-2);font-weight:500}
 
-/* ─── Shortcut demo ───────────────────── */
-.shortcut-section{padding:80px 0}
-.shortcut-demo{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
-.key-combo{display:flex;align-items:center;gap:8px}
-.key{background:var(--surface);border:1px solid var(--border);border-bottom:3px solid #d1d5db;border-radius:10px;padding:10px 16px;font-size:18px;font-weight:700;font-family:-apple-system,system-ui;color:var(--text);min-width:48px;text-align:center;transition:all 0.15s}
-.key.pressed{transform:translateY(2px);border-bottom-width:1px;background:#f1f5f9;box-shadow:inset 0 1px 3px rgba(0,0,0,0.08)}
-.key-plus{font-size:14px;color:var(--text-tertiary);font-weight:600}
-.shortcut-label{font-size:15px;color:var(--text-secondary);font-weight:500}
-.shortcuts-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:48px}
-.shortcut-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
-.shortcut-item .keys{display:flex;gap:4px}
-.shortcut-item .key-sm{background:#f8fafc;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;font-family:-apple-system,system-ui}
-.shortcut-item .desc{font-size:13px;color:var(--text-secondary)}
+/* ─── Dark section (platform) ────── */
+.dark-section{background:#0a0a0a;color:#fff;padding:100px 0;text-align:center;position:relative;overflow:hidden;margin:80px 0}
+.dark-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,135,0.06) 0%,transparent 65%);pointer-events:none}
+.dark-section .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,135,0.1);border:1px solid rgba(0,255,135,0.2);border-radius:100px;padding:8px 20px;font-size:13px;font-weight:600;color:var(--green);margin-bottom:20px}
+.dark-section h2{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1.5px;margin-bottom:16px}
+.dark-section p{font-size:16px;color:rgba(255,255,255,0.5);max-width:480px;margin:0 auto 32px;line-height:1.6}
+.dark-section .note{font-size:13px;color:rgba(255,255,255,0.3);max-width:420px;margin:24px auto 0;line-height:1.5}
+.btn-src{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;transition:all 0.3s}
+.btn-src:hover{background:rgba(0,255,135,0.1);border-color:rgba(0,255,135,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,135,0.1)}
+.btn-src svg{width:18px;height:18px}
 
-/* ─── Platform ─────────────────────────── */
-.platform{padding:80px 0;text-align:center}
-.platform .chip{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.12);border-radius:100px;padding:10px 24px;font-size:14px;font-weight:600;color:var(--indigo);margin-bottom:16px}
-.platform .note{font-size:14px;color:var(--text-tertiary);margin-top:16px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
+/* ─── Footer ─────────────────────── */
+footer{padding:48px 0 40px;text-align:center}
+footer .mark{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;font-weight:700;font-size:14px;color:var(--text-2)}
+footer .mark svg{color:var(--green-dim)}
+footer p{font-size:12px;color:var(--text-3);line-height:1.7}
 
-/* ─── Footer ───────────────────────────── */
-footer{padding:40px 0;border-top:1px solid var(--border);text-align:center}
-footer .brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
-footer .brand span{font-weight:700;font-size:15px;letter-spacing:-0.3px}
-footer p{font-size:13px;color:var(--text-tertiary);line-height:1.6}
-footer .links{display:flex;justify-content:center;gap:24px;margin-top:12px;font-size:13px}
+/* ─── Animations ─────────────────── */
+.r{opacity:0;transform:translateY(32px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1)}
+.r.v{opacity:1;transform:none}
+.r-d1{transition-delay:0.08s}.r-d2{transition-delay:0.16s}.r-d3{transition-delay:0.24s}.r-d4{transition-delay:0.32s}
 
-/* ─── Animations ───────────────────────── */
-.reveal{opacity:0;transform:translateY(24px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
-.reveal.visible{opacity:1;transform:translateY(0)}
-.reveal-delay-1{transition-delay:0.1s}
-.reveal-delay-2{transition-delay:0.2s}
-.reveal-delay-3{transition-delay:0.3s}
-
-@media(max-width:768px){
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .shortcut-demo{flex-direction:column;gap:20px}
-  nav .links{display:none}
+/* ─── Responsive ─────────────────── */
+@media(max-width:640px){
+  .hero h1{letter-spacing:-2px}
+  .numbers-row{gap:32px}
+  .hero .badges{flex-wrap:wrap;justify-content:center}
+  .hero .sub-cta{display:block;margin:16px auto 0}
 }
 </style>
 </head>
 <body>
 
-<!-- Nav -->
 <nav>
   <div class="inner">
-    <a href="#" class="logo">
-      <img src="assets/icon.svg" alt="EverClip">
-      EverClip
-    </a>
-    <div class="links">
-      <a href="#features">Features</a>
-      <a href="#shortcuts">Shortcuts</a>
-      <a href="#open-source">Open Source</a>
-      <a href="https://github.com/thornebridge/everclip" class="cta-sm">View on GitHub</a>
+    <a href="#" class="wordmark">everclip<span class="dot">.</span></a>
+    <div class="icons">
+      <a href="https://thornebridge.tech" target="_blank" aria-label="Thornebridge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </a>
+      <a href="https://github.com/thornebridge/everclip" target="_blank" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      </a>
     </div>
   </div>
 </nav>
 
-<!-- Hero -->
 <section class="hero">
+  <div class="hero-glow"></div>
   <div class="container">
-    <div class="badge"><span class="dot"></span> Free &amp; Open Source</div>
-    <h1>Never lose a copy<br>again.</h1>
-    <p>EverClip is the clipboard manager your Mac has been missing. Native Swift, built for Apple Silicon, infinitely powerful. Your data never leaves your machine.</p>
-    <div class="actions">
-      <a href="https://github.com/thornebridge/everclip/releases" class="btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Download for Mac
+    <h1 class="r">Never lose<br><span class="line2">a copy again.</span></h1>
+    <p class="r r-d1">The clipboard manager your Mac has been missing. Native. Fast. Free. Built on Swift for Apple Silicon. Your data never leaves your machine.</p>
+    <div class="r r-d2">
+      <a href="https://github.com/thornebridge/everclip/releases" class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Download for Mac</span>
       </a>
-      <a href="https://github.com/thornebridge/everclip" class="btn-secondary">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        Source Code
+      <a href="https://github.com/thornebridge/everclip" class="sub-cta">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View source
       </a>
     </div>
-    <div class="meta">
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        100% Local
-      </span>
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        Native Swift
-      </span>
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Apple Silicon
-      </span>
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-        Open Source
-      </span>
+    <div class="badges r r-d3">
+      <span><span class="pulse"></span> Open source</span>
+      <span>Native Swift</span>
+      <span>Apple Silicon</span>
+      <span>100% local</span>
     </div>
   </div>
 </section>
 
-<!-- Interactive Demo Strip -->
-<section class="demo-section">
-  <div style="overflow:hidden">
-    <div class="demo-strip" id="demo-strip">
-      <!-- Cards get duplicated by JS for infinite scroll -->
-    </div>
-  </div>
+<section class="demo">
+  <div class="track" id="track"></div>
 </section>
 
-<!-- Features -->
-<section class="features" id="features">
+<section class="feat" id="features">
   <div class="container">
-    <div class="section-label reveal">Built Different</div>
-    <h2 class="section-title reveal">Everything you copy,<br>organized forever.</h2>
-    <p class="section-subtitle reveal">EverClip intelligently captures, categorizes, and serves your clipboard history. No subscriptions. No cloud. No compromise.</p>
-
-    <div class="feature-grid">
-      <div class="feature-card reveal">
-        <div class="icon" style="background:rgba(99,102,241,0.08)">&#x1F50D;</div>
-        <h3>Intelligent Detection</h3>
-        <p>Automatically recognizes text, URLs, code, images, colors, Markdown, and files. Each type gets its own visual treatment and smart preview.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-1">
-        <div class="icon" style="background:rgba(16,185,129,0.08)">&#x1F4CC;</div>
-        <h3>Pinboards &amp; Tags</h3>
-        <p>Organize clips into color-coded pinboards. Tag entries across multiple collections. Pin items so they persist forever.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-2">
-        <div class="icon" style="background:rgba(245,158,11,0.08)">&#x26A1;</div>
-        <h3>Smart Rules</h3>
-        <p>Auto-route clipboard entries to pinboards based on source app, content type, regex patterns, or URL domain. Zero manual sorting.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-3">
-        <div class="icon" style="background:rgba(139,92,246,0.08)">&#x1F4DA;</div>
-        <h3>Paste Stack</h3>
-        <p>Collect multiple copies with &#x2318;&#x21E7;C, then paste them all in order. Perfect for data entry, form filling, and batch workflows.</p>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon" style="background:rgba(244,63,94,0.08)">&#x1F504;</div>
-        <h3>Paste Transformations</h3>
-        <p>Paste as plain text, UPPERCASE, lowercase, Title Case, URL encoded, trimmed, or wrapped in quotes. Right-click any entry to transform.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-1">
-        <div class="icon" style="background:rgba(6,182,212,0.08)">&#x1F50E;</div>
-        <h3>Instant Search &amp; Filter</h3>
-        <p>Find anything instantly. Filter by type, source app, or search across all content. Keyboard-first navigation through your entire history.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-2">
-        <div class="icon" style="background:rgba(99,102,241,0.08)">&#x2328;&#xFE0F;</div>
-        <h3>Text Expansion</h3>
-        <p>Create snippets with abbreviation triggers. Use template variables like &#123;&#123;date&#125;&#125;, &#123;&#123;time&#125;&#125;, and &#123;&#123;clipboard&#125;&#125; for dynamic content.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-3">
-        <div class="icon" style="background:rgba(16,185,129,0.08)">&#x1F512;</div>
-        <h3>Privacy First</h3>
-        <p>Everything stays on your Mac. Exclude sensitive apps like password managers. Pause capture anytime. Your clipboard, your rules.</p>
-      </div>
+    <div class="label r">What it does</div>
+    <h2 class="r r-d1">Everything you copy,<br><em>organized forever.</em></h2>
+    <div class="feat-grid r r-d2">
+      <div class="feat-item"><span class="icon">&#x1f50d;</span><h3>Smart detection</h3><p>Auto-recognizes text, URLs, code, images, colors, Markdown, and files. Each gets its own preview.</p></div>
+      <div class="feat-item"><span class="icon">&#x1f4cc;</span><h3>Pinboards & tags</h3><p>Color-coded collections. Multi-board. Items live in as many places as you need them.</p></div>
+      <div class="feat-item"><span class="icon">&#x26a1;</span><h3>Smart rules</h3><p>Auto-route clips to pinboards by app, type, regex, or domain. Zero manual sorting.</p></div>
+      <div class="feat-item"><span class="icon">&#x1f4da;</span><h3>Paste stack</h3><p>Collect multiple copies, paste them all in sequence. Batch workflows, perfected.</p></div>
+      <div class="feat-item"><span class="icon">&#x1f504;</span><h3>Transformations</h3><p>Paste as plain text, UPPERCASE, lowercase, URL encoded, trimmed. Right-click any clip.</p></div>
+      <div class="feat-item"><span class="icon">&#x1f50e;</span><h3>Instant search</h3><p>Find anything. Filter by type, app, or full-text search across your entire history.</p></div>
+      <div class="feat-item"><span class="icon">&#x2328;&#xfe0f;</span><h3>Text expansion</h3><p>Snippets with &#123;&#123;date&#125;&#125;, &#123;&#123;time&#125;&#125;, &#123;&#123;clipboard&#125;&#125; templates. Type less.</p></div>
+      <div class="feat-item"><span class="icon">&#x1f512;</span><h3>Privacy first</h3><p>Everything on your Mac. Exclude sensitive apps. Pause anytime. Your clipboard, your rules.</p></div>
     </div>
   </div>
 </section>
 
-<!-- Stats -->
-<section class="stats reveal">
+<section class="numbers r">
   <div class="container">
-    <div class="stats-grid">
-      <div class="stat">
-        <div class="number" id="stat-files">41</div>
-        <div class="label">Swift source files</div>
-      </div>
-      <div class="stat">
-        <div class="number" id="stat-lines">3,872</div>
-        <div class="label">Lines of code</div>
-      </div>
-      <div class="stat">
-        <div class="number">0</div>
-        <div class="label">External dependencies</div>
-      </div>
-      <div class="stat">
-        <div class="number">&#x221E;</div>
-        <div class="label">Clipboard entries</div>
-      </div>
+    <div class="numbers-row">
+      <div class="num"><div class="val" data-target="41">0</div><div class="lbl">Swift files</div></div>
+      <div class="num"><div class="val" data-target="3872">0</div><div class="lbl">Lines of code</div></div>
+      <div class="num"><div class="val">0</div><div class="lbl">Dependencies</div></div>
+      <div class="num"><div class="val">&infin;</div><div class="lbl">History</div></div>
     </div>
   </div>
 </section>
 
-<!-- Shortcuts -->
-<section class="shortcut-section" id="shortcuts">
-  <div class="container" style="text-align:center">
-    <div class="section-label reveal">Keyboard First</div>
-    <h2 class="section-title reveal">Designed for speed.</h2>
-    <p class="section-subtitle reveal" style="margin-left:auto;margin-right:auto">Every action has a keyboard shortcut. Your hands never leave the keyboard.</p>
-
-    <div class="shortcut-demo reveal">
-      <div class="key-combo" id="key-demo">
-        <div class="key" id="key-cmd">&#x2318;</div>
-        <span class="key-plus">+</span>
-        <div class="key" id="key-shift">&#x21E7;</div>
-        <span class="key-plus">+</span>
-        <div class="key" id="key-v">V</div>
-      </div>
-      <div class="shortcut-label">opens EverClip from anywhere</div>
-    </div>
-
-    <div class="shortcuts-list reveal">
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">&#x2318;</span><span class="key-sm">&#x21E7;</span><span class="key-sm">V</span></div>
-        <div class="desc">Open clipboard history</div>
-      </div>
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">&#x2318;</span><span class="key-sm">&#x21E7;</span><span class="key-sm">C</span></div>
-        <div class="desc">Start Paste Stack</div>
-      </div>
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">&#x2190;</span><span class="key-sm">&#x2192;</span></div>
-        <div class="desc">Navigate between clips</div>
-      </div>
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">&#x21A9;</span></div>
-        <div class="desc">Paste selected clip</div>
-      </div>
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">Space</span></div>
-        <div class="desc">Quick Look preview</div>
-      </div>
-      <div class="shortcut-item">
-        <div class="keys"><span class="key-sm">Esc</span></div>
-        <div class="desc">Close drawer</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Platform -->
-<section class="platform reveal">
+<section class="keys-section r" id="shortcuts">
   <div class="container">
+    <h2>Keyboard-first.<br>Always.</h2>
+    <div class="key-row">
+      <div class="k" id="k1">&#x2318;</div>
+      <span class="k-plus">+</span>
+      <div class="k" id="k2">&#x21e7;</div>
+      <span class="k-plus">+</span>
+      <div class="k" id="k3">V</div>
+    </div>
+    <div class="shortcut-grid">
+      <div class="sc"><div class="combo"><span>&#x2318;</span><span>&#x21e7;</span><span>V</span></div><div class="what">Open history</div></div>
+      <div class="sc"><div class="combo"><span>&#x2318;</span><span>&#x21e7;</span><span>C</span></div><div class="what">Paste stack</div></div>
+      <div class="sc"><div class="combo"><span>&#x2190;</span><span>&#x2192;</span></div><div class="what">Navigate</div></div>
+      <div class="sc"><div class="combo"><span>&#x21a9;</span></div><div class="what">Paste clip</div></div>
+      <div class="sc"><div class="combo"><span>Space</span></div><div class="what">Quick look</div></div>
+      <div class="sc"><div class="combo"><span>Esc</span></div><div class="what">Close</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="dark-section">
+  <div class="container r">
     <div class="chip">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-      macOS Exclusive
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      macOS only
     </div>
-    <h2 class="section-title">Built for the Mac. Only the Mac.</h2>
-    <p class="section-subtitle" style="margin-left:auto;margin-right:auto">
-      EverClip is a native Swift application compiled for Apple Silicon. No Electron. No web views. No compromise. Just pure, screaming-fast, native performance.
-    </p>
-    <p class="note">
-      Not available on Windows, Linux, or iOS. But it's open source — fork it, port it, make it yours. We'd love to see what you build.
-    </p>
+    <h2>Built for the Mac.<br>Only the Mac.</h2>
+    <p>Pure Swift. Compiled for ARM. No Electron, no web views, no runtime overhead. Just native, screaming-fast performance.</p>
+    <a href="https://github.com/thornebridge/everclip" class="btn-src">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      View source &amp; star
+    </a>
+    <p class="note">Not on Windows, Linux, or iOS. But it's MIT licensed &mdash; fork it, port it, make it yours.</p>
   </div>
 </section>
 
-<!-- Open Source -->
-<section class="oss" id="open-source">
-  <div class="container">
-    <div class="oss-card reveal">
-      <h2>Built in the open.<br>Free forever.</h2>
-      <p>EverClip is MIT licensed. Read every line, audit every query, fork and modify anything. We believe the best tools are the ones you can trust completely.</p>
-      <a href="https://github.com/thornebridge/everclip" class="btn-gh">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        Star on GitHub
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
 <footer>
   <div class="container">
-    <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      <span>Powered by Thornebridge</span>
+    <div class="mark">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Powered by Thornebridge
     </div>
-    <p>We build tools because we believe great technology should be free, open, and yours.</p>
-    <div class="links">
-      <a href="https://github.com/thornebridge">GitHub</a>
-      <a href="https://thornebridge.tech">thornebridge.tech</a>
-    </div>
+    <p>We build technology for a reason.</p>
   </div>
 </footer>
 
 <script>
-// ─── Demo strip cards ───────────────────
-const cards = [
-  {type:'text',label:'Text',body:'The quick brown fox jumps over the lazy dog. Lorem ipsum dolor sit amet.',app:'Notes',time:'2s ago'},
-  {type:'link',label:'Link',body:'https://github.com/thornebridge/everclip',app:'Safari',time:'15s ago'},
-  {type:'code',label:'Code',body:'<div class="code-block">func greet() {<br>&nbsp;&nbsp;print("Hello")<br>}</div>',app:'Xcode',time:'1m ago'},
-  {type:'image',label:'Image',body:'<div class="img-placeholder">&#x1F5BC;</div>',app:'Finder',time:'3m ago'},
-  {type:'color',label:'Color',body:'<div style="display:flex;align-items:center;gap:8px"><div class="color-swatch" style="background:#6366f1"></div><span style="font-family:monospace;font-size:12px">#6366f1</span></div>',app:'Figma',time:'5m ago'},
-  {type:'md',label:'Markdown',body:'<strong># Project Plan</strong><br>- Research &#x2705;<br>- Design &#x2705;<br>- Build &#x1F6A7;',app:'Obsidian',time:'8m ago'},
-  {type:'text',label:'Text',body:'Meeting notes: discussed Q3 roadmap, assigned action items to eng team.',app:'Slack',time:'12m ago'},
-  {type:'link',label:'Link',body:'https://developer.apple.com/swift/',app:'Chrome',time:'20m ago'},
-  {type:'code',label:'Code',body:'<div class="code-block">SELECT * FROM entries<br>WHERE type = \'code\'<br>ORDER BY created DESC;</div>',app:'TablePlus',time:'25m ago'},
-  {type:'color',label:'Color',body:'<div style="display:flex;align-items:center;gap:8px"><div class="color-swatch" style="background:#10b981"></div><span style="font-family:monospace;font-size:12px">#10b981</span></div>',app:'Sketch',time:'30m ago'},
-  {type:'image',label:'Image',body:'<div class="img-placeholder">&#x1F4F7;</div>',app:'Screenshot',time:'35m ago'},
-  {type:'md',label:'Markdown',body:'<strong>## API Notes</strong><br>Use `POST /api/v2`<br>Auth: Bearer token',app:'VS Code',time:'40m ago'},
+// ─── Demo cards ─────────────────────
+const C=[
+  {t:'text',c:'#3b82f6',b:'The quick brown fox jumps over the lazy dog. Meeting notes from Q3 planning.',a:'Notes',d:'#5b8def'},
+  {t:'link',c:'#00cc6a',b:'<span style="color:#00cc6a">github.com/thornebridge/everclip</span><br><span style="opacity:0.5">The clipboard manager your Mac deserves</span>',a:'Safari',d:'#34d399'},
+  {t:'code',c:'#f59e0b',b:'<div class="mono">func greet(_ name: String) {<br>&nbsp;&nbsp;print("Hello, \\(name)")<br>}</div>',a:'Xcode',d:'#fbbf24'},
+  {t:'image',c:'#8b5cf6',b:'<div class="img-ph">&#x1f5bc;&#xfe0f;</div>',a:'Screenshot',d:'#a78bfa'},
+  {t:'color',c:'#f43f5e',b:'<div style="display:flex;align-items:center;gap:10px"><div class="swatch" style="background:#00ff87"></div><span class="mono" style="padding:0;background:none">#00ff87</span></div>',a:'Figma',d:'#fb7185'},
+  {t:'markdown',c:'#06b6d4',b:'<strong style="font-size:12px"># API Docs</strong><br>- Auth: Bearer token<br>- Rate limit: 1000/hr',a:'Obsidian',d:'#22d3ee'},
+  {t:'text',c:'#3b82f6',b:'Discussed roadmap priorities. Action items assigned to eng and design teams.',a:'Slack',d:'#5b8def'},
+  {t:'link',c:'#00cc6a',b:'<span style="color:#00cc6a">developer.apple.com</span><br><span style="opacity:0.5">Swift documentation &amp; guides</span>',a:'Chrome',d:'#34d399'},
+  {t:'code',c:'#f59e0b',b:'<div class="mono">SELECT * FROM entries<br>WHERE type = \'code\'<br>LIMIT 100;</div>',a:'TablePlus',d:'#fbbf24'},
+  {t:'color',c:'#f43f5e',b:'<div style="display:flex;align-items:center;gap:10px"><div class="swatch" style="background:#6366f1"></div><span class="mono" style="padding:0;background:none">#6366f1</span></div>',a:'Sketch',d:'#fb7185'},
+  {t:'image',c:'#8b5cf6',b:'<div class="img-ph">&#x1f4f7;</div>',a:'Finder',d:'#a78bfa'},
+  {t:'markdown',c:'#06b6d4',b:'<strong style="font-size:12px">## Deploy</strong><br>1. Build release<br>2. Run tests &#x2705;',a:'VS Code',d:'#22d3ee'},
 ];
-
-const strip = document.getElementById('demo-strip');
-const allCards = [...cards, ...cards]; // duplicate for seamless loop
-allCards.forEach(c => {
-  const el = document.createElement('div');
-  el.className = `demo-card type-${c.type}`;
-  el.innerHTML = `
-    <div class="card-type">${c.label}</div>
-    <div class="card-body">${c.body}</div>
-    <div class="card-footer"><span>${c.app}</span><span>${c.time}</span></div>
-  `;
-  strip.appendChild(el);
+const tk=document.getElementById('track');
+[...C,...C].forEach((c,i)=>{
+  const times=['2s','8s','15s','32s','1m','2m','5m','12m','20m','30m','45m','1h'];
+  const el=document.createElement('div');
+  el.className='card';
+  el.innerHTML=`<div class="accent" style="background:${c.c}"></div>
+    <div class="head"><div class="type" style="color:${c.c}">${c.t}</div><div class="time">${times[i%12]} ago</div></div>
+    <div class="body">${c.b}</div>
+    <div class="foot"><div class="app-dot" style="background:${c.d}"></div>${c.a}</div>`;
+  tk.appendChild(el);
 });
 
-// ─── Scroll reveal ──────────────────────
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+// ─── Reveal ──────────────────────────
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('v');obs.unobserve(e.target)}})},{threshold:0.08});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
 
-// ─── Key press animation ────────────────
-function animateKeys() {
-  const keys = ['key-cmd','key-shift','key-v'];
-  keys.forEach((id, i) => {
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      el.classList.add('pressed');
-      setTimeout(() => el.classList.remove('pressed'), 200);
-    }, i * 120);
+// ─── Key animation ───────────────────
+function pop(){
+  ['k1','k2','k3'].forEach((id,i)=>{
+    setTimeout(()=>{const e=document.getElementById(id);e.classList.add('pop');setTimeout(()=>e.classList.remove('pop'),250)},i*100);
   });
 }
-setInterval(animateKeys, 4000);
-setTimeout(animateKeys, 1500);
+setInterval(pop,3500);setTimeout(pop,1200);
 
-// ─── Stat counter animation ─────────────
-function animateCounter(el, target, suffix='') {
-  let current = 0;
-  const step = Math.ceil(target / 40);
-  const interval = setInterval(() => {
-    current = Math.min(current + step, target);
-    el.textContent = current.toLocaleString() + suffix;
-    if (current >= target) clearInterval(interval);
-  }, 30);
-}
-const statsObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      animateCounter(document.getElementById('stat-files'), 41);
-      animateCounter(document.getElementById('stat-lines'), 3872);
-      statsObserver.unobserve(e.target);
-    }
+// ─── Counter animation ──────────────
+const numObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
+  e.target.querySelectorAll('[data-target]').forEach(el=>{
+    const t=+el.dataset.target;let c=0;const s=Math.ceil(t/35);
+    const iv=setInterval(()=>{c=Math.min(c+s,t);el.textContent=c.toLocaleString();if(c>=t)clearInterval(iv)},25);
   });
-}, { threshold: 0.3 });
-statsObserver.observe(document.querySelector('.stats'));
+  numObs.unobserve(e.target);
+}})},{threshold:0.3});
+numObs.observe(document.querySelector('.numbers'));
+
+// ─── Tilt cards on mouse ─────────────
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-8px) scale(1.02) perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform=''});
+});
 </script>
 </body>
 </html>

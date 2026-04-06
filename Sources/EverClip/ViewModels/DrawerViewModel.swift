@@ -16,6 +16,9 @@ final class DrawerViewModel: ObservableObject {
     @Published var isSidebarVisible = true
     @Published var selectedIndex = 0
 
+    // MARK: - DB-backed filtered results
+    @Published var filteredEntries: [ClipboardEntry] = []
+
     // MARK: - Collections
     @Published var pinboards: [Pinboard] = []
     @Published var tags: [Tag] = []
@@ -33,11 +36,34 @@ final class DrawerViewModel: ObservableObject {
 
     let monitor: ClipboardMonitor
     let storage: StorageManager
+    private var cancellables = Set<AnyCancellable>()
 
     init(monitor: ClipboardMonitor, storage: StorageManager) {
         self.monitor = monitor
         self.storage = storage
         reloadCollections()
+
+        // Debounce search text for responsive typing
+        $searchText
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .sink { [weak self] _ in self?.reloadFilteredEntries() }
+            .store(in: &cancellables)
+
+        // Reload immediately when sidebar filter or content type changes
+        $sidebarFilter
+            .sink { [weak self] _ in self?.reloadFilteredEntries() }
+            .store(in: &cancellables)
+        $contentTypeFilter
+            .sink { [weak self] _ in self?.reloadFilteredEntries() }
+            .store(in: &cancellables)
+
+        // Reload when new clipboard entries arrive (debounced)
+        monitor.$entries
+            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+            .sink { [weak self] _ in self?.reloadFilteredEntries() }
+            .store(in: &cancellables)
+
+        reloadFilteredEntries()
     }
 
     func reloadCollections() {
@@ -45,39 +71,25 @@ final class DrawerViewModel: ObservableObject {
         tags = storage.tags.loadAll()
     }
 
-    // MARK: - Filtered entries
+    // MARK: - Filtered entries (DB-backed)
 
-    var filteredEntries: [ClipboardEntry] {
-        var result = monitor.entries
+    func reloadFilteredEntries() {
+        let query = searchText.isEmpty ? nil : searchText
+        let ct = contentTypeFilter?.rawValue
 
-        switch sidebarFilter {
-        case .all:
-            break
-        case .favorites:
-            result = result.filter { $0.isFavorite }
-        case .pinboard(let id):
-            let entryIDs = storage.pinboards.entryIDs(inPinboard: id)
-            result = result.filter { entryIDs.contains($0.id) }
-        case .tag(let id):
-            let entryIDs = storage.tags.entryIDs(withTag: id)
-            result = result.filter { entryIDs.contains($0.id) }
-        }
+        let fav: Bool?
+        if case .favorites = sidebarFilter { fav = true } else { fav = nil }
 
-        if let type = contentTypeFilter {
-            result = result.filter { $0.contentType == type }
-        }
+        let pbID: String?
+        if case .pinboard(let id) = sidebarFilter { pbID = id } else { pbID = nil }
 
-        if !searchText.isEmpty {
-            let q = searchText.lowercased()
-            result = result.filter { entry in
-                entry.textContent?.lowercased().contains(q) ?? false
-                    || entry.contentType.displayName.lowercased().contains(q)
-                    || entry.sourceApp?.lowercased().contains(q) ?? false
-                    || entry.title?.lowercased().contains(q) ?? false
-            }
-        }
+        let tID: String?
+        if case .tag(let id) = sidebarFilter { tID = id } else { tID = nil }
 
-        return result
+        filteredEntries = storage.entries.search(
+            query: query, contentType: ct, isFavorite: fav,
+            pinboardID: pbID, tagID: tID, limit: 200
+        )
     }
 
     // MARK: - Entry Actions
@@ -99,21 +111,28 @@ final class DrawerViewModel: ObservableObject {
     }
 
     func toggleFavorite(_ entry: ClipboardEntry) {
-        guard let idx = monitor.entries.firstIndex(where: { $0.id == entry.id }) else { return }
-        monitor.entries[idx].isFavorite.toggle()
-        storage.entries.updateFavorite(id: entry.id, isFavorite: monitor.entries[idx].isFavorite)
+        let newValue = !entry.isFavorite
+        storage.entries.updateFavorite(id: entry.id, isFavorite: newValue)
+        // Update in-memory monitor array if present
+        if let idx = monitor.entries.firstIndex(where: { $0.id == entry.id }) {
+            monitor.entries[idx].isFavorite = newValue
+        }
+        reloadFilteredEntries()
     }
 
     func deleteEntry(_ entry: ClipboardEntry) {
-        monitor.entries.removeAll { $0.id == entry.id }
         storage.entries.delete(id: entry.id)
         storage.entries.deleteImageIfNeeded(entry)
+        monitor.entries.removeAll { $0.id == entry.id }
+        reloadFilteredEntries()
     }
 
     func updateTitle(_ entry: ClipboardEntry, title: String) {
-        guard let idx = monitor.entries.firstIndex(where: { $0.id == entry.id }) else { return }
-        monitor.entries[idx].title = title
         storage.entries.updateTitle(id: entry.id, title: title.isEmpty ? nil : title)
+        if let idx = monitor.entries.firstIndex(where: { $0.id == entry.id }) {
+            monitor.entries[idx].title = title
+        }
+        reloadFilteredEntries()
     }
 
     // MARK: - Pinboard Actions
@@ -175,10 +194,14 @@ final class DrawerViewModel: ObservableObject {
         storage.tags.tagIDs(forEntry: entryID).contains(tagID)
     }
 
-    // MARK: - Counts
+    // MARK: - Counts (DB-backed)
 
     func favoriteCount() -> Int {
-        monitor.entries.filter { $0.isFavorite }.count
+        storage.entries.countFavorites()
+    }
+
+    func allItemsCount() -> Int {
+        storage.entries.countAll()
     }
 
     func pinboardEntryCount(_ id: String) -> Int {

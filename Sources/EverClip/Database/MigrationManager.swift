@@ -31,6 +31,7 @@ final class MigrationManager {
             (1, migration1),
             (2, migration2),
             (3, migration3),
+            (4, migration4),
         ]
 
         for (version, run) in migrations where version > current {
@@ -136,5 +137,16 @@ final class MigrationManager {
                 value TEXT NOT NULL
             )
         """)
+    }
+
+    // MARK: - Migration 4: Performance indexes for 1M-entry scale
+
+    private func migration4() {
+        db.exec("CREATE INDEX IF NOT EXISTS idx_entries_favorite ON entries(is_favorite)")
+        db.exec("CREATE INDEX IF NOT EXISTS idx_entries_content_type ON entries(content_type)")
+        db.exec("CREATE INDEX IF NOT EXISTS idx_entries_source_bundle ON entries(source_bundle_id)")
+        db.exec("CREATE INDEX IF NOT EXISTS idx_entries_text_search ON entries(text_content COLLATE NOCASE)")
+        db.exec("CREATE INDEX IF NOT EXISTS idx_ep_entry ON entry_pinboards(entry_id)")
+        db.exec("CREATE INDEX IF NOT EXISTS idx_et_entry ON entry_tags(entry_id)")
     }
 }

@@ -58,6 +58,29 @@ final class SmartRuleStore {
         return rules
     }
 
+    func loadEnabled() -> [SmartRule] {
+        let sql = "SELECT id, name, target_pinboard_id, conditions_json, is_enabled, sort_order, created_at FROM smart_rules WHERE is_enabled = 1 ORDER BY sort_order ASC"
+        guard let stmt = db.prepare(sql) else { return [] }
+        defer { sqlite3_finalize(stmt) }
+
+        var rules: [SmartRule] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let conditionsJSON = db.col(stmt, 3) ?? "[]"
+            let conditions = (try? JSONDecoder().decode([RuleCondition].self, from: Data(conditionsJSON.utf8))) ?? []
+
+            rules.append(SmartRule(
+                id: db.col(stmt, 0) ?? UUID().uuidString,
+                name: db.col(stmt, 1) ?? "Untitled Rule",
+                targetPinboardID: db.col(stmt, 2),
+                conditions: conditions,
+                isEnabled: db.colInt(stmt, 4) != 0,
+                sortOrder: db.colInt(stmt, 5),
+                createdAt: Date(timeIntervalSince1970: db.colDouble(stmt, 6))
+            ))
+        }
+        return rules
+    }
+
     func delete(id: String) {
         guard let stmt = db.prepare("DELETE FROM smart_rules WHERE id = ?") else { return }
         defer { sqlite3_finalize(stmt) }

@@ -6,7 +6,7 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            filterRow("tray.full", "All Items", count: viewModel.monitor.entries.count, filter: .all)
+            filterRow("tray.full", "All Items", count: viewModel.allItemsCount(), filter: .all)
             filterRow("star", "Favorites", count: viewModel.favoriteCount(), filter: .favorites)
 
             // PINBOARDS

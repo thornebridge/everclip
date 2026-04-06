@@ -10,10 +10,12 @@ final class ClipboardMonitor: ObservableObject {
     private var timer: Timer?
     private var lastChangeCount: Int = 0
     private var suppressNextChange = false
+    private var recentHashes: Set<String> = []
 
     init(storage: StorageManager) {
         self.storage = storage
-        self.entries = storage.entries.loadAll()
+        self.entries = storage.entries.loadAll(limit: 200)
+        self.recentHashes = Set(entries.map { $0.contentHash })
         self.lastChangeCount = NSPasteboard.general.changeCount
     }
 
@@ -57,25 +59,34 @@ final class ClipboardMonitor: ObservableObject {
 
         guard let entry = extract(from: pb) else { return }
 
-        // Deduplicate — if the newest entry has the same hash, skip
-        if entries.first?.contentHash == entry.contentHash { return }
+        // O(1) dedup via hash set, with DB fallback for entries outside the window
+        if recentHashes.contains(entry.contentHash) || storage.entries.existsWithHash(entry.contentHash) {
+            return
+        }
 
-        // Move duplicate to the front if it already exists deeper in history
-        entries.removeAll { $0.contentHash == entry.contentHash }
+        recentHashes.insert(entry.contentHash)
         entries.insert(entry, at: 0)
 
-        // Prune old entries
-        let maxEntries = storage.preferences.getInt("maxEntries", default: 1000)
-        while entries.count > maxEntries {
-            let old = entries.removeLast()
-            storage.entries.delete(id: old.id)
-            storage.entries.deleteImageIfNeeded(old)
+        // Cap in-memory array to 500 (DB is the source of truth for older entries)
+        if entries.count > 500 {
+            entries = Array(entries.prefix(500))
+        }
+
+        // Cap hash set to prevent unbounded growth
+        if recentHashes.count > 10_000 {
+            recentHashes = Set(entries.map { $0.contentHash })
         }
 
         storage.entries.save(entry)
 
-        // Evaluate smart rules for auto-pinboard assignment
-        let rules = storage.smartRules.loadAll()
+        // Batch prune via preference-based retention
+        let maxDays = storage.preferences.getInt("retentionDays", default: 0)
+        if maxDays > 0 {
+            storage.entries.pruneOlderThan(days: maxDays)
+        }
+
+        // Evaluate smart rules for auto-pinboard assignment (enabled only)
+        let rules = storage.smartRules.loadEnabled()
         let pinboardIDs = SmartRuleEngine.evaluate(entry: entry, rules: rules)
         for pbID in pinboardIDs {
             storage.pinboards.addEntry(entryID: entry.id, toPinboard: pbID)
