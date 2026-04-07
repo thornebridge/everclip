@@ -49,30 +49,24 @@ struct ClipboardCardView: View {
             Spacer()
             if entry.isFavorite {
                 Image(systemName: "star.fill")
-                    .font(.system(size: 8))
+                    .font(theme.font(size: 8))
                     .foregroundStyle(.yellow)
             }
         }
         .foregroundColor(accent)
     }
 
-    // MARK: - Preview
+    // MARK: - Preview (all fonts use theme scaling)
 
     @ViewBuilder
     private var preview: some View {
         switch entry.contentType {
-        case .image:
-            imagePreview
-        case .url:
-            urlPreview
-        case .code:
-            codePreview
-        case .color:
-            colorPreview
-        case .markdown:
-            markdownPreview
-        default:
-            textPreview
+        case .image:    imagePreview
+        case .url:      urlPreview
+        case .code:     codePreview
+        case .color:    colorPreview
+        case .markdown: markdownPreview
+        default:        textPreview
         }
     }
 
@@ -82,25 +76,25 @@ struct ClipboardCardView: View {
                 Image(nsImage: img)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.dim(6)))
             } else {
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: theme.dim(6))
                     .fill(.quaternary)
                     .overlay(Image(systemName: "photo").foregroundStyle(.tertiary))
             }
         }
-        .frame(maxHeight: 80)
+        .frame(maxHeight: theme.dim(80))
     }
 
     private var urlPreview: some View {
         VStack(alignment: .leading, spacing: 3) {
             if let text = entry.textContent, let host = URL(string: text)?.host {
                 Text(host)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(theme.font(size: 10, weight: .medium))
                     .foregroundStyle(accent)
             }
             Text(entry.displayText)
-                .font(.system(size: 10))
+                .font(theme.font(size: 10))
                 .foregroundStyle(.primary.opacity(0.8))
                 .lineLimit(4)
         }
@@ -108,41 +102,41 @@ struct ClipboardCardView: View {
 
     private var codePreview: some View {
         Text(entry.displayText)
-            .font(.system(size: 9, design: .monospaced))
+            .font(theme.font(size: 9, design: .monospaced))
             .foregroundStyle(.primary.opacity(0.85))
             .lineLimit(6)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(6)
+            .padding(theme.dim(6))
             .background(Color.black.opacity(0.15))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: theme.dim(6)))
     }
 
     private var colorPreview: some View {
         HStack(spacing: 8) {
             if let color = parseColor(entry.textContent ?? "") {
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: theme.dim(6))
                     .fill(color)
-                    .frame(width: 36, height: 36)
+                    .frame(width: theme.dim(36), height: theme.dim(36))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: theme.dim(6))
                             .strokeBorder(.primary.opacity(0.15), lineWidth: 1)
                     )
             }
             Text(entry.displayText)
-                .font(.system(size: 10, design: .monospaced))
+                .font(theme.font(size: 10, design: .monospaced))
                 .lineLimit(2)
         }
     }
 
     private var markdownPreview: some View {
         MarkdownPreviewView(markdown: entry.displayText)
-            .frame(maxWidth: .infinity, maxHeight: 80)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .frame(maxWidth: .infinity, maxHeight: theme.dim(80))
+            .clipShape(RoundedRectangle(cornerRadius: theme.dim(6)))
     }
 
     private var textPreview: some View {
         Text(entry.displayText)
-            .font(.system(size: 11))
+            .font(theme.font(size: 11))
             .foregroundStyle(.primary.opacity(0.85))
             .lineLimit(5)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,7 +153,7 @@ struct ClipboardCardView: View {
                         let icon = NSWorkspace.shared.icon(forFile: appURL.path)
                         Image(nsImage: icon)
                             .resizable()
-                            .frame(width: 12, height: 12)
+                            .frame(width: theme.dim(12), height: theme.dim(12))
                     }
                     Text(app)
                         .font(theme.font(size: 9))
@@ -184,18 +178,8 @@ struct ClipboardCardView: View {
     private func parseColor(_ text: String) -> Color? {
         let hex = text.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
         guard hex.count == 6 || hex.count == 3, hex.allSatisfy({ $0.isHexDigit }) else { return nil }
-
-        let expanded: String
-        if hex.count == 3 {
-            expanded = hex.map { "\($0)\($0)" }.joined()
-        } else {
-            expanded = hex
-        }
-
+        let expanded = hex.count == 3 ? hex.map { "\($0)\($0)" }.joined() : hex
         guard let val = UInt64(expanded, radix: 16) else { return nil }
-        let r = Double((val >> 16) & 0xFF) / 255.0
-        let g = Double((val >> 8) & 0xFF) / 255.0
-        let b = Double(val & 0xFF) / 255.0
-        return Color(red: r, green: g, blue: b)
+        return Color(red: Double((val >> 16) & 0xFF) / 255, green: Double((val >> 8) & 0xFF) / 255, blue: Double(val & 0xFF) / 255)
     }
 }

@@ -13,7 +13,12 @@ final class DrawerWindowController {
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
-    private var drawerHeight: CGFloat { theme.dim(260) }
+    /// Dynamic drawer height: card height + filter bar + status bar + padding
+    private var drawerHeight: CGFloat {
+        let cardH = theme.cardSize.height * theme.uiScale
+        let chrome: CGFloat = 90 // filter bar + status bar + dividers + padding
+        return cardH + chrome
+    }
     private let edgePadding: CGFloat = 12
 
     init(monitor: ClipboardMonitor) {
@@ -27,22 +32,24 @@ final class DrawerWindowController {
         previousApp = NSWorkspace.shared.frontmostApplication
 
         let screen = screenUnderMouse()
-        // Use visibleFrame to respect dock and menu bar positioning
         let visible = screen.visibleFrame
+        let height = drawerHeight
         let width = visible.width - edgePadding * 2
-        let startY = visible.origin.y - drawerHeight
+        let startY = visible.origin.y - height
         let endY = visible.origin.y + edgePadding
         let x = visible.origin.x + edgePadding
 
-        let startFrame = NSRect(x: x, y: startY, width: width, height: drawerHeight)
-        let endFrame   = NSRect(x: x, y: endY,   width: width, height: drawerHeight)
+        let startFrame = NSRect(x: x, y: startY, width: width, height: height)
+        let endFrame   = NSRect(x: x, y: endY,   width: width, height: height)
 
         if panel == nil { buildPanel(frame: startFrame) }
 
         viewModel?.reloadCollections()
+        viewModel?.reloadFilteredEntries()
 
         guard let panel else { return }
 
+        // Resize panel to current theme dimensions
         panel.setFrame(startFrame, display: false)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -59,13 +66,14 @@ final class DrawerWindowController {
     func hide(andPaste: Bool = false) {
         removeClickOutsideMonitor()
 
-        guard let panel, let screen = NSScreen.main else { return }
+        guard let panel else { return }
+        let screen = screenUnderMouse()
 
         let hideFrame = NSRect(
             x: panel.frame.origin.x,
             y: screen.visibleFrame.origin.y - drawerHeight,
             width: panel.frame.width,
-            height: drawerHeight
+            height: panel.frame.height
         )
 
         NSAnimationContext.runAnimationGroup({ ctx in
@@ -140,7 +148,6 @@ final class DrawerWindowController {
         p.contentView?.addSubview(vibrancy)
         vibrancyView = vibrancy
 
-        // React to theme material/radius changes
         theme.onMaterialChange = { [weak self] in
             self?.vibrancyView?.material = ThemeManager.shared.drawerMaterial.nsMaterial
             self?.vibrancyView?.layer?.cornerRadius = ThemeManager.shared.drawerCornerRadius
@@ -165,8 +172,13 @@ final class DrawerWindowController {
     }
 
     private func activateAndPaste() {
-        previousApp?.activate()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+        // Re-activate the previous app, with fallback
+        if let prev = previousApp, !prev.isTerminated {
+            prev.activate()
+        }
+
+        // Longer delay to ensure the target app is focused and ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             PasteSimulator.paste()
         }
     }

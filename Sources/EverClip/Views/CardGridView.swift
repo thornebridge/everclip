@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CardGridView: View {
     @ObservedObject var viewModel: DrawerViewModel
+    @EnvironmentObject private var theme: ThemeManager
 
     var body: some View {
         let entries = viewModel.filteredEntries
@@ -11,21 +12,9 @@ struct CardGridView: View {
         } else {
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 10) {
+                    LazyHStack(spacing: theme.dim(10)) {
                         ForEach(Array(entries.enumerated()), id: \.element.id) { idx, entry in
-                            ClipboardCardView(entry: entry, isSelected: idx == viewModel.selectedIndex)
-                                .id(entry.id)
-                                .onTapGesture(count: 2) { viewModel.select(entry, paste: true) }
-                                .onTapGesture(count: 1) { viewModel.select(entry, paste: false) }
-                                .contextMenu { contextMenu(for: entry) }
-                                .onDrag {
-                                    if entry.contentType == .image, let path = entry.imagePath {
-                                        return NSItemProvider(contentsOf: URL(fileURLWithPath: path)) ?? NSItemProvider()
-                                    } else if let text = entry.textContent {
-                                        return NSItemProvider(object: text as NSString)
-                                    }
-                                    return NSItemProvider()
-                                }
+                            cardView(for: entry, at: idx)
                         }
                     }
                     .padding(.horizontal, 12)
@@ -40,6 +29,16 @@ struct CardGridView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Card with gestures (separated to avoid type-checker overload)
+
+    private func cardView(for entry: ClipboardEntry, at idx: Int) -> some View {
+        ClipboardCardView(entry: entry, isSelected: idx == viewModel.selectedIndex)
+            .id(entry.id)
+            .onTapGesture(count: 2) { viewModel.select(entry, paste: true) }
+            .onTapGesture(count: 1) { viewModel.select(entry, paste: false) }
+            .contextMenu { contextMenu(for: entry) }
     }
 
     // MARK: - Context Menu
@@ -129,7 +128,7 @@ struct CardGridView: View {
                 .font(.system(size: 24))
                 .foregroundStyle(.tertiary)
             Text(viewModel.monitor.entries.isEmpty ? "Clipboard history is empty" : "No matches")
-                .font(.system(size: 12))
+                .font(theme.font(size: 12))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
