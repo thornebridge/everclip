@@ -23,6 +23,15 @@ Native Swift. Apple Silicon optimized. 100% free and open source. Your data neve
 
 ## Install
 
+### Download (recommended)
+
+1. Download the `.dmg` from [Releases](https://github.com/thornebridge/everclip/releases/latest)
+2. Open the DMG and drag EverClip to Applications
+3. **First launch**: Right-click the app → **Open** (bypasses Gatekeeper since the app isn't notarized yet)
+4. Grant Accessibility permissions when prompted
+
+> EverClip is open source and ad-hoc signed. macOS may warn about unverified developers on first launch. Right-click → Open resolves this permanently. Alternatively run: `xattr -cr /Applications/EverClip.app`
+
 ### Build from source
 
 Requires macOS 14+ and Swift 5.9+.

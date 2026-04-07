@@ -103,6 +103,8 @@ nav .icons a svg{width:18px;height:18px}
 .hero .sub-cta:hover{color:var(--text)}
 .hero .badges{display:flex;justify-content:center;gap:28px;margin-top:48px;font-size:12px;color:var(--text-3);font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
 .hero .badges span{display:flex;align-items:center;gap:6px}
+.hero .install-note{font-size:12px;color:var(--text-3);margin-top:20px}
+.hero .install-note strong{color:var(--text-2)}
 .hero .badges .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,135,0.4)}70%{box-shadow:0 0 0 8px rgba(0,255,135,0)}}
 
@@ -284,7 +286,8 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
         View source
       </a>
     </div>
-    <div class="badges r r-d3">
+    <p class="install-note r r-d3">First launch: right-click the app → <strong>Open</strong> to bypass Gatekeeper.</p>
+    <div class="badges r r-d4">
       <span><span class="pulse"></span> Open source</span>
       <span>Native Swift</span>
       <span>Apple Silicon</span>
