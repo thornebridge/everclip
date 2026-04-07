@@ -1,5 +1,5 @@
 {
-  "latest": "2.0.0",
-  "url": "https://github.com/thornebridge/everclip/releases/latest",
-  "notes": "Initial release — clipboard history, pinboards, smart rules, paste stack, and more."
+  "latest": "2.1.0",
+  "url": "https://github.com/thornebridge/everclip/releases/tag/v2.1.0",
+  "notes": "Theming system (appearance, accent colors, UI/font scale, card sizes, drawer material), lightweight update notifications, full mobile-responsive landing page, SEO optimization."
 }
