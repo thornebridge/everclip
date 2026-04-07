@@ -52,23 +52,25 @@ final class DrawerWindowController {
 
         if panel == nil { buildPanel(frame: startFrame) }
 
-        viewModel?.reloadCollections()
-        viewModel?.reloadFilteredEntries()
-
         guard let panel else { return }
 
-        // Always clean up stale monitors before installing new ones
         removeClickOutsideMonitor()
 
+        // Position off-screen and show immediately (no data loading yet)
         panel.setFrame(startFrame, display: false)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        NSAnimationContext.runAnimationGroup { ctx in
+        // Animate FIRST — smooth slide up with no main thread contention
+        NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.22
             ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
             panel.animator().setFrame(endFrame, display: true)
-        }
+        }, completionHandler: { [weak self] in
+            // Load data AFTER animation completes — no jitter
+            self?.viewModel?.reloadCollections()
+            self?.viewModel?.reloadFilteredEntries()
+        })
 
         installClickOutsideMonitor()
     }
