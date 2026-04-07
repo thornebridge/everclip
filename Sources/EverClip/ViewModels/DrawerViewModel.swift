@@ -43,10 +43,8 @@ final class DrawerViewModel: ObservableObject {
         set { if !newValue { credentialSaveEntry = nil; credentialSaveField = nil } }
     }
 
-    // MARK: - Callbacks (set by DrawerWindowController)
-    var onSelect: ((ClipboardEntry, Bool) -> Void)?
-    var onSelectTransformed: ((ClipboardEntry, PasteTransformation) -> Void)?
-    var onDismiss: (() -> Void)?
+    // MARK: - Direct reference (no closure chain)
+    weak var controller: DrawerWindowController?
 
     let monitor: ClipboardMonitor
     let storage: StorageManager
@@ -127,14 +125,14 @@ final class DrawerViewModel: ObservableObject {
     // MARK: - Entry Actions
 
     func select(_ entry: ClipboardEntry, paste: Bool) {
-        onSelect?(entry, paste)
+        controller?.select(entry: entry, paste: paste)
     }
 
     func selectTransformed(_ entry: ClipboardEntry, transform: PasteTransformation) {
-        onSelectTransformed?(entry, transform)
+        controller?.selectTransformed(entry: entry, transform: transform)
     }
 
-    func dismiss() { onDismiss?() }
+    func dismiss() { controller?.hide() }
 
     func move(_ delta: Int) {
         let entries = filteredEntries

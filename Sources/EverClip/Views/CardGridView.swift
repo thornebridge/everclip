@@ -36,18 +36,13 @@ struct CardGridView: View {
     private func cardView(for entry: ClipboardEntry, at idx: Int) -> some View {
         ClipboardCardView(entry: entry, isSelected: idx == viewModel.selectedIndex)
             .id(entry.id)
-            .contentShape(Rectangle())
-            .gesture(
-                TapGesture(count: 2).onEnded {
-                    viewModel.select(entry, paste: true)
-                }
-            )
-            .simultaneousGesture(
-                TapGesture(count: 1).onEnded {
-                    viewModel.selectedIndex = idx
-                    viewModel.select(entry, paste: false)
-                }
-            )
+            .onTapGesture(count: 2) {
+                viewModel.select(entry, paste: true)
+            }
+            .onTapGesture(count: 1) {
+                viewModel.selectedIndex = idx
+                viewModel.select(entry, paste: false)
+            }
             .contextMenu { contextMenu(for: entry) }
     }
 

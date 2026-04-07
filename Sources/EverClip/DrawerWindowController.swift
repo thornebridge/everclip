@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import ApplicationServices
 
 final class DrawerWindowController {
     private var panel: DrawerPanel?
@@ -190,11 +191,7 @@ final class DrawerWindowController {
         }
 
         let vm = DrawerViewModel(monitor: monitor, storage: storage, vault: vault)
-        vm.onSelect = { [weak self] entry, paste in self?.select(entry: entry, paste: paste) }
-        vm.onSelectTransformed = { [weak self] entry, transform in
-            self?.selectTransformed(entry: entry, transform: transform)
-        }
-        vm.onDismiss = { [weak self] in self?.hide() }
+        vm.controller = self
         viewModel = vm
 
         let swiftUIContent = DrawerContentView(viewModel: vm)
@@ -207,7 +204,26 @@ final class DrawerWindowController {
         panel = p
     }
 
+    private static var hasShownAccessibilityAlert = false
+
     private func activateAndPaste() {
+        // Check accessibility ONCE — show clear instructions if not granted
+        if !AXIsProcessTrusted() && !Self.hasShownAccessibilityAlert {
+            Self.hasShownAccessibilityAlert = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "EverClip needs Accessibility access to paste into other apps.\n\n1. Open System Settings → Privacy & Security → Accessibility\n2. Remove EverClip if it's already listed\n3. Click + and add EverClip.app from Applications\n4. Make sure the toggle is ON"
+                alert.alertStyle = .warning
+                alert.addButton(withTitle: "Open System Settings")
+                alert.addButton(withTitle: "OK")
+                if alert.runModal() == .alertFirstButtonReturn {
+                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+                }
+            }
+            return
+        }
+
         if let prev = previousApp, !prev.isTerminated {
             prev.activate()
         }
