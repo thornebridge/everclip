@@ -3,6 +3,7 @@ import SwiftUI
 struct ClipboardCardView: View {
     let entry: ClipboardEntry
     let isSelected: Bool
+    @EnvironmentObject private var theme: ThemeManager
 
     @State private var thumbnail: NSImage?
     @State private var isHovering = false
@@ -10,19 +11,19 @@ struct ClipboardCardView: View {
     private var accent: Color { entry.contentType.accentColor }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: theme.dim(6)) {
             header
             Divider().opacity(0.2)
             preview
             Spacer(minLength: 0)
             footer
         }
-        .padding(10)
-        .frame(width: 190, height: 160)
+        .padding(theme.dim(10))
+        .frame(width: theme.cardSize.width * theme.uiScale, height: theme.cardSize.height * theme.uiScale)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: theme.dim(12)))
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: theme.dim(12))
                 .strokeBorder(
                     accent.opacity(isSelected ? 1 : (isHovering ? 0.7 : 0.45)),
                     lineWidth: isSelected ? 2.5 : 1.5
@@ -42,9 +43,9 @@ struct ClipboardCardView: View {
     private var header: some View {
         HStack(spacing: 5) {
             Image(systemName: entry.contentType.iconName)
-                .font(.system(size: 10, weight: .semibold))
+                .font(theme.font(size: 10, weight: .semibold))
             Text(entry.contentType.displayName)
-                .font(.system(size: 10, weight: .semibold))
+                .font(theme.font(size: 10, weight: .semibold))
             Spacer()
             if entry.isFavorite {
                 Image(systemName: "star.fill")
@@ -161,14 +162,14 @@ struct ClipboardCardView: View {
                             .frame(width: 12, height: 12)
                     }
                     Text(app)
-                        .font(.system(size: 9))
+                        .font(theme.font(size: 9))
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
                 }
             }
             Spacer()
             Text(entry.createdAt, style: .relative)
-                .font(.system(size: 9))
+                .font(theme.font(size: 9))
                 .foregroundStyle(.tertiary)
         }
     }

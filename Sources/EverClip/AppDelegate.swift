@@ -10,15 +10,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var monitor: ClipboardMonitor!
     private var drawer: DrawerWindowController!
     private var pasteStack: PasteStackManager!
+    private var updateChecker: UpdateChecker!
     private var pauseMenuItem: NSMenuItem!
+    private var updateMenuItem: NSMenuItem!
     private var stackPanel: NSPanel?
     private var preferencesWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         storage = StorageManager()
+        ThemeManager.shared.load(from: storage.preferences)
         monitor = ClipboardMonitor(storage: storage)
         pasteStack = PasteStackManager()
+        updateChecker = UpdateChecker()
         drawer = DrawerWindowController(monitor: monitor)
 
         hotKeyManager = HotKeyManager()
@@ -50,6 +54,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenuBar()
         monitor.start()
         PasteSimulator.ensureAccessibility()
+
+        // Check for updates
+        updateChecker.checkIfNeeded()
+        updateChecker.$updateAvailable
+            .receive(on: RunLoop.main)
+            .sink { [weak self] available in
+                self?.updateMenuItem?.isHidden = !available
+                if available, let btn = self?.statusItem.button {
+                    btn.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "EverClip — Update available")
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Paste Stack
@@ -99,10 +115,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let prefsView = PreferencesView(storage: storage)
+            .environmentObject(ThemeManager.shared)
         let hosting = NSHostingView(rootView: prefsView)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 420),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 480),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered, defer: false
         )
@@ -125,6 +142,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+
+        updateMenuItem = NSMenuItem(title: "Update Available — Download", action: #selector(openUpdate), keyEquivalent: "")
+        updateMenuItem.isHidden = true
+        menu.addItem(updateMenuItem)
+        menu.addItem(.separator())
+
         menu.addItem(withTitle: "Show History  ⌘⇧V", action: #selector(showHistory), keyEquivalent: "")
         menu.addItem(.separator())
 
@@ -165,6 +188,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func clearHistory() {
         monitor.entries.removeAll()
         storage.entries.clearAll()
+    }
+
+    @objc private func openUpdate() {
+        updateChecker.openReleasePage()
     }
 
     @objc private func quit() {

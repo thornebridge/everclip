@@ -8,10 +8,12 @@ final class DrawerWindowController {
     private var viewModel: DrawerViewModel?
     private var previousApp: NSRunningApplication?
     private var clickMonitor: Any?
+    private var vibrancyView: NSVisualEffectView?
+    private let theme = ThemeManager.shared
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
-    private let drawerHeight: CGFloat = 260
+    private var drawerHeight: CGFloat { theme.dim(260) }
     private let edgePadding: CGFloat = 12
 
     init(monitor: ClipboardMonitor) {
@@ -130,12 +132,19 @@ final class DrawerWindowController {
 
         let vibrancy = NSVisualEffectView(frame: p.contentView!.bounds)
         vibrancy.autoresizingMask = [.width, .height]
-        vibrancy.material = .hudWindow
+        vibrancy.material = theme.drawerMaterial.nsMaterial
         vibrancy.state = .active
         vibrancy.wantsLayer = true
-        vibrancy.layer?.cornerRadius = 16
+        vibrancy.layer?.cornerRadius = theme.drawerCornerRadius
         vibrancy.layer?.masksToBounds = true
         p.contentView?.addSubview(vibrancy)
+        vibrancyView = vibrancy
+
+        // React to theme material/radius changes
+        theme.onMaterialChange = { [weak self] in
+            self?.vibrancyView?.material = ThemeManager.shared.drawerMaterial.nsMaterial
+            self?.vibrancyView?.layer?.cornerRadius = ThemeManager.shared.drawerCornerRadius
+        }
 
         let vm = DrawerViewModel(monitor: monitor, storage: storage)
         vm.onSelect = { [weak self] entry, paste in self?.select(entry: entry, paste: paste) }
@@ -146,6 +155,7 @@ final class DrawerWindowController {
         viewModel = vm
 
         let contentView = DrawerContentView(viewModel: vm)
+            .environmentObject(theme)
         let hosting = NSHostingView(rootView: contentView)
         hosting.frame = p.contentView!.bounds
         hosting.autoresizingMask = [.width, .height]

@@ -7,11 +7,12 @@ struct PreferencesView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             GeneralTab(storage: storage).tabItem { Label("General", systemImage: "gearshape") }.tag(0)
-            PrivacyTab(storage: storage).tabItem { Label("Privacy", systemImage: "lock.shield") }.tag(1)
-            RulesTab(storage: storage).tabItem { Label("Rules", systemImage: "bolt") }.tag(2)
-            SnippetsTab(storage: storage).tabItem { Label("Snippets", systemImage: "text.cursor") }.tag(3)
+            AppearancePrefsView().tabItem { Label("Appearance", systemImage: "paintbrush") }.tag(1)
+            PrivacyTab(storage: storage).tabItem { Label("Privacy", systemImage: "lock.shield") }.tag(2)
+            RulesTab(storage: storage).tabItem { Label("Rules", systemImage: "bolt") }.tag(3)
+            SnippetsTab(storage: storage).tabItem { Label("Snippets", systemImage: "text.cursor") }.tag(4)
         }
-        .frame(width: 520, height: 420)
+        .frame(width: 540, height: 480)
     }
 }
 
