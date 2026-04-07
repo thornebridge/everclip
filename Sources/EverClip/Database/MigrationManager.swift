@@ -32,6 +32,7 @@ final class MigrationManager {
             (2, migration2),
             (3, migration3),
             (4, migration4),
+            (5, migration5),
         ]
 
         for (version, run) in migrations where version > current {
@@ -148,5 +149,20 @@ final class MigrationManager {
         db.exec("CREATE INDEX IF NOT EXISTS idx_entries_text_search ON entries(text_content COLLATE NOCASE)")
         db.exec("CREATE INDEX IF NOT EXISTS idx_ep_entry ON entry_pinboards(entry_id)")
         db.exec("CREATE INDEX IF NOT EXISTS idx_et_entry ON entry_tags(entry_id)")
+    }
+
+    // MARK: - Migration 5: Credentials vault
+
+    private func migration5() {
+        db.exec("""
+            CREATE TABLE credentials (
+                id         TEXT PRIMARY KEY,
+                platform   TEXT NOT NULL,
+                username   TEXT,
+                password   TEXT,
+                created_at REAL NOT NULL
+            )
+        """)
+        db.exec("CREATE INDEX idx_creds_platform ON credentials(platform)")
     }
 }

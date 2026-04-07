@@ -5,6 +5,7 @@ final class DrawerWindowController {
     private var panel: DrawerPanel?
     private let monitor: ClipboardMonitor
     private let storage: StorageManager
+    private let vault: VaultManager
     private var viewModel: DrawerViewModel?
     private var previousApp: NSRunningApplication?
     private var clickMonitor: Any?
@@ -21,9 +22,10 @@ final class DrawerWindowController {
     }
     private let edgePadding: CGFloat = 12
 
-    init(monitor: ClipboardMonitor) {
+    init(monitor: ClipboardMonitor, vault: VaultManager) {
         self.monitor = monitor
         self.storage = monitor.storage
+        self.vault = vault
     }
 
     // MARK: - Show / Hide
@@ -153,7 +155,7 @@ final class DrawerWindowController {
             self?.vibrancyView?.layer?.cornerRadius = ThemeManager.shared.drawerCornerRadius
         }
 
-        let vm = DrawerViewModel(monitor: monitor, storage: storage)
+        let vm = DrawerViewModel(monitor: monitor, storage: storage, vault: vault)
         vm.onSelect = { [weak self] entry, paste in self?.select(entry: entry, paste: paste) }
         vm.onSelectTransformed = { [weak self] entry, transform in
             self?.selectTransformed(entry: entry, transform: transform)

@@ -6,6 +6,7 @@ enum SidebarFilter: Hashable {
     case favorites
     case pinboard(id: String)
     case tag(id: String)
+    case vault
 }
 
 final class DrawerViewModel: ObservableObject {
@@ -28,6 +29,12 @@ final class DrawerViewModel: ObservableObject {
     @Published var editingPinboard: Pinboard? = nil
     @Published var showNewTagField = false
     @Published var quickLookEntry: ClipboardEntry? = nil
+    @Published var credentialSaveEntry: ClipboardEntry? = nil
+    @Published var credentialSaveField: CredentialField? = nil
+    var showCredentialSave: Bool {
+        get { credentialSaveEntry != nil }
+        set { if !newValue { credentialSaveEntry = nil; credentialSaveField = nil } }
+    }
 
     // MARK: - Callbacks (set by DrawerWindowController)
     var onSelect: ((ClipboardEntry, Bool) -> Void)?
@@ -36,11 +43,13 @@ final class DrawerViewModel: ObservableObject {
 
     let monitor: ClipboardMonitor
     let storage: StorageManager
+    let vault: VaultManager
     private var cancellables = Set<AnyCancellable>()
 
-    init(monitor: ClipboardMonitor, storage: StorageManager) {
+    init(monitor: ClipboardMonitor, storage: StorageManager, vault: VaultManager) {
         self.monitor = monitor
         self.storage = storage
+        self.vault = vault
         reloadCollections()
 
         // Debounce search text for responsive typing
@@ -202,6 +211,10 @@ final class DrawerViewModel: ObservableObject {
 
     func allItemsCount() -> Int {
         storage.entries.countAll()
+    }
+
+    func vaultCount() -> Int {
+        storage.credentials.count()
     }
 
     func pinboardEntryCount(_ id: String) -> Int {

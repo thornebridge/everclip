@@ -111,6 +111,24 @@ struct CardGridView: View {
             Label("Quick Look", systemImage: "eye")
         }
 
+        if entry.textContent != nil {
+            Divider()
+            Menu("Save as Credential") {
+                Button {
+                    viewModel.credentialSaveEntry = entry
+                    viewModel.credentialSaveField = .username
+                } label: {
+                    Label("This is a Username", systemImage: "person")
+                }
+                Button {
+                    viewModel.credentialSaveEntry = entry
+                    viewModel.credentialSaveField = .password
+                } label: {
+                    Label("This is a Password", systemImage: "key")
+                }
+            }
+        }
+
         Divider()
 
         Button(role: .destructive) {

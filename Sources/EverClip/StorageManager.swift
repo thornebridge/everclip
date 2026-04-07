@@ -8,6 +8,7 @@ final class StorageManager {
     let smartRules: SmartRuleStore
     let snippets: SnippetStore
     let preferences: PreferencesStore
+    let credentials: CredentialStore
 
     private let connection: DatabaseConnection
 
@@ -29,6 +30,7 @@ final class StorageManager {
         tags        = TagStore(db: connection)
         smartRules  = SmartRuleStore(db: connection)
         snippets    = SnippetStore(db: connection)
-        preferences = PreferencesStore(db: connection)
+        preferences  = PreferencesStore(db: connection)
+        credentials  = CredentialStore(db: connection)
     }
 }

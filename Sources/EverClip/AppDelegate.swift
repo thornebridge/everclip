@@ -24,7 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         monitor = ClipboardMonitor(storage: storage)
         pasteStack = PasteStackManager()
         updateChecker = UpdateChecker()
-        drawer = DrawerWindowController(monitor: monitor)
+        let vault = VaultManager(store: storage.credentials)
+        drawer = DrawerWindowController(monitor: monitor, vault: vault)
 
         hotKeyManager = HotKeyManager()
         let cmdShift = UInt32(cmdKey | shiftKey)

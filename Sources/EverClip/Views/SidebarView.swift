@@ -8,6 +8,7 @@ struct SidebarView: View {
         VStack(alignment: .leading, spacing: 2) {
             filterRow("tray.full", "All Items", count: viewModel.allItemsCount(), filter: .all)
             filterRow("star", "Favorites", count: viewModel.favoriteCount(), filter: .favorites)
+            filterRow("lock.shield", "Vault", count: viewModel.vaultCount(), filter: .vault)
 
             // PINBOARDS
             HStack {

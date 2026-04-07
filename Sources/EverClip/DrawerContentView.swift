@@ -18,7 +18,7 @@ struct DrawerContentView: View {
                 VStack(spacing: 0) {
                     FilterBarView(viewModel: viewModel, searchFocused: $searchFocused)
                     Divider().opacity(0.2)
-                    CardGridView(viewModel: viewModel)
+                    mainContent
                     Divider().opacity(0.2)
                     StatusBarView(viewModel: viewModel)
                 }
@@ -75,6 +75,31 @@ struct DrawerContentView: View {
                 viewModel.editingPinboard = nil
                 viewModel.reloadCollections()
             }
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.credentialSaveEntry != nil },
+            set: { if !$0 { viewModel.credentialSaveEntry = nil; viewModel.credentialSaveField = nil } }
+        )) {
+            if let entry = viewModel.credentialSaveEntry,
+               let field = viewModel.credentialSaveField,
+               let text = entry.textContent {
+                CredentialSaveView(
+                    clipText: text,
+                    field: field,
+                    vault: viewModel.vault
+                )
+            }
+        }
+    }
+
+    // MARK: - Main content (switches between cards and vault)
+
+    @ViewBuilder
+    private var mainContent: some View {
+        if case .vault = viewModel.sidebarFilter {
+            VaultListView(vault: viewModel.vault, viewModel: viewModel)
+        } else {
+            CardGridView(viewModel: viewModel)
         }
     }
 }
