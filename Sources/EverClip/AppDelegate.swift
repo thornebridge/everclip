@@ -66,9 +66,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] available in
                 self?.updateMenuItem?.isHidden = !available
-                if available, let btn = self?.statusItem.button {
-                    btn.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "EverClip — Update available")
-                }
             }
             .store(in: &cancellables)
     }
@@ -143,7 +140,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let btn = statusItem.button {
-            btn.image = NSImage(systemSymbolName: "clipboard", accessibilityDescription: "EverClip")
+            let title = NSMutableAttributedString(string: "e", attributes: [
+                .font: NSFont.systemFont(ofSize: 14, weight: .black),
+                .foregroundColor: NSColor.labelColor,
+            ])
+            title.append(NSAttributedString(string: ".", attributes: [
+                .font: NSFont.systemFont(ofSize: 14, weight: .black),
+                .foregroundColor: NSColor(red: 0, green: 1, blue: 0.529, alpha: 1),
+            ]))
+            btn.attributedTitle = title
         }
 
         let menu = NSMenu()
@@ -182,12 +187,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func togglePause() {
         monitor.isPaused.toggle()
         pauseMenuItem.title = monitor.isPaused ? "Resume Clipboard Capture" : "Pause Clipboard Capture"
-        if let btn = statusItem.button {
-            btn.image = NSImage(
-                systemSymbolName: monitor.isPaused ? "clipboard.fill" : "clipboard",
-                accessibilityDescription: "EverClip"
-            )
-        }
+        updateMenuBarIcon()
+    }
+
+    private func updateMenuBarIcon() {
+        guard let btn = statusItem.button else { return }
+        let dimmed = monitor.isPaused
+        let title = NSMutableAttributedString(string: "e", attributes: [
+            .font: NSFont.systemFont(ofSize: 14, weight: .black),
+            .foregroundColor: dimmed ? NSColor.tertiaryLabelColor : NSColor.labelColor,
+        ])
+        title.append(NSAttributedString(string: ".", attributes: [
+            .font: NSFont.systemFont(ofSize: 14, weight: .black),
+            .foregroundColor: dimmed
+                ? NSColor.tertiaryLabelColor
+                : NSColor(red: 0, green: 1, blue: 0.529, alpha: 1),
+        ]))
+        btn.attributedTitle = title
     }
 
     @objc private func clearHistory() {

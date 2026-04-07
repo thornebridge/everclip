@@ -3,14 +3,9 @@ import ApplicationServices
 import AppKit
 
 enum PasteSimulator {
-    /// Simulates Cmd+V into the frontmost application. Returns true if posted successfully.
+    /// Simulates Cmd+V into the frontmost application.
     @discardableResult
     static func paste() -> Bool {
-        guard AXIsProcessTrusted() else {
-            promptAccessibility()
-            return false
-        }
-
         let src = CGEventSource(stateID: .combinedSessionState)
         let vKeyCode: CGKeyCode = 0x09
 
@@ -69,18 +64,14 @@ enum PasteSimulator {
         }
     }
 
-    /// Checks accessibility and prompts if not granted. Returns current status.
+    /// Prompts for Accessibility permissions once. Call only at startup.
     @discardableResult
     static func ensureAccessibility() -> Bool {
         let trusted = AXIsProcessTrusted()
         if !trusted {
-            promptAccessibility()
+            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+            AXIsProcessTrustedWithOptions(opts)
         }
         return trusted
-    }
-
-    private static func promptAccessibility() {
-        let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
-        AXIsProcessTrustedWithOptions(opts)
     }
 }

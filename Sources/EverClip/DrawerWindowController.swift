@@ -213,10 +213,7 @@ final class DrawerWindowController {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            if !PasteSimulator.paste() {
-                // Accessibility denied — re-prompt
-                PasteSimulator.ensureAccessibility()
-            }
+            PasteSimulator.paste()
         }
     }
 
