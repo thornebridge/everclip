@@ -47,7 +47,7 @@ struct CredentialSaveView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Save Credential")
                     .font(.system(size: 15, weight: .bold))
-                Text("In-memory only \u{2022} Wiped on quit")
+                Text("Stored locally \u{2022} Never leaves your Mac")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
