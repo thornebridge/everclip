@@ -32,7 +32,7 @@ Your data never leaves your machine.
 
 <br>
 
-<sub>44 Swift files &middot; 4,400+ lines &middot; zero dependencies &middot; &lt;500KB binary</sub>
+<sub>49 Swift files &middot; 5,100+ lines &middot; zero dependencies &middot; &lt;500KB binary</sub>
 
 </div>
 
@@ -301,7 +301,7 @@ swift build && .build/debug/EverClip
 bash scripts/build.sh
 ```
 
-The codebase is intentionally simple: 44 Swift files, zero external dependencies, no Xcode project needed. Just Swift Package Manager.
+The codebase is intentionally simple: 49 Swift files, zero external dependencies, no Xcode project needed. Just Swift Package Manager.
 
 <br>
 
