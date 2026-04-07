@@ -7,7 +7,7 @@ final class UpdateChecker: ObservableObject {
     @Published var releaseURL: String?
     @Published var releaseNotes: String?
 
-    private let currentVersion = "2.1.0"
+    private let currentVersion = "2.2.0"
     private let versionURL = "https://thornebridge.github.io/everclip/version.json"
     private let checkIntervalSeconds: TimeInterval = 6 * 3600 // 6 hours
 

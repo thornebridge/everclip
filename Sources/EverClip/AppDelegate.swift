@@ -2,6 +2,7 @@ import AppKit
 import Carbon
 import SwiftUI
 import Combine
+import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
@@ -54,6 +55,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenuBar()
         monitor.start()
         PasteSimulator.ensureAccessibility()
+
+        // Prompt for launch at login on first run
+        promptLoginItemIfNeeded()
 
         // Check for updates
         updateChecker.checkIfNeeded()
@@ -188,6 +192,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func clearHistory() {
         monitor.entries.removeAll()
         storage.entries.clearAll()
+    }
+
+    // MARK: - Launch at Login
+
+    private func promptLoginItemIfNeeded() {
+        let key = "hasPromptedLoginItem"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            let alert = NSAlert()
+            alert.messageText = "Launch at Login?"
+            alert.informativeText = "EverClip works best when it's always running. Start it automatically when you log in?"
+            alert.addButton(withTitle: "Enable")
+            alert.addButton(withTitle: "Not Now")
+            alert.alertStyle = .informational
+            if alert.runModal() == .alertFirstButtonReturn {
+                try? SMAppService.mainApp.register()
+            }
+        }
     }
 
     @objc private func openUpdate() {

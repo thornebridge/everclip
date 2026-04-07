@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 struct PreferencesView: View {
     let storage: StorageManager
@@ -22,6 +23,7 @@ private struct GeneralTab: View {
     let storage: StorageManager
     @State private var maxEntries: Double = 1000
     @State private var retentionIndex = 4 // 1 year
+    @State private var launchAtLogin = false
 
     private let retentionOptions = [
         ("1 Day", 1), ("1 Week", 7), ("1 Month", 30),
@@ -30,6 +32,14 @@ private struct GeneralTab: View {
 
     var body: some View {
         Form {
+            Section("Startup") {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newVal in
+                        if newVal { try? SMAppService.mainApp.register() }
+                        else { try? SMAppService.mainApp.unregister() }
+                    }
+            }
+
             Section("History") {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Maximum Items: \(Int(maxEntries))")
@@ -67,6 +77,7 @@ private struct GeneralTab: View {
             maxEntries = Double(storage.preferences.getInt("maxEntries", default: 1000))
             let days = storage.preferences.getInt("retentionDays", default: 365)
             retentionIndex = retentionOptions.firstIndex(where: { $0.1 == days }) ?? 4
+            launchAtLogin = SMAppService.mainApp.status == .enabled
         }
     }
 }
