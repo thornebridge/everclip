@@ -135,13 +135,19 @@ nav .icons a svg{width:18px;height:18px}
 .feat .label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--green-dim);margin-bottom:12px}
 .feat h2{font-size:clamp(32px,5vw,50px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:56px}
 .feat h2 em{font-style:normal;color:var(--green-dim)}
-.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:var(--radius);overflow:hidden}
 .feat-item{background:var(--surface);padding:32px 28px;transition:all 0.4s}
 .feat-item:hover{background:rgba(0,255,135,0.02)}
 .feat-item .icon{font-size:24px;margin-bottom:14px;display:block;transition:transform 0.3s}
 .feat-item:hover .icon{transform:scale(1.15) rotate(-3deg)}
 .feat-item h3{font-size:15px;font-weight:700;margin-bottom:6px;letter-spacing:-0.2px}
 .feat-item p{font-size:13px;color:var(--text-2);line-height:1.6}
+.feat-quote{grid-column:span 3;background:var(--surface);padding:40px 44px;display:flex;flex-direction:column;justify-content:center}
+.feat-quote blockquote{font-size:clamp(18px,2.5vw,24px);font-weight:700;letter-spacing:-0.5px;line-height:1.4;color:var(--text);margin:0 0 16px}
+.feat-quote blockquote em{font-style:normal;color:var(--green-dim)}
+.feat-quote .attr{font-size:13px;color:var(--text-3);font-weight:500}
+@media(max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr)}.feat-quote{grid-column:span 2}}
+@media(max-width:640px){.feat-grid{grid-template-columns:1fr}.feat-quote{grid-column:span 1}}
 
 /* ─── Numbers ────────────────────── */
 .numbers{padding:80px 0;text-align:center}
@@ -248,7 +254,6 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
 
 /* Tablet */
 @media(max-width:900px){
-  .feat-grid{grid-template-columns:repeat(2,1fr)}
   .shortcut-grid{grid-template-columns:repeat(2,1fr)}
   .dark-section{margin:60px 0}
 }
@@ -269,7 +274,6 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
   .card .body{min-height:48px;font-size:10px}
   .feat{padding:64px 0 48px}
   .feat h2{font-size:clamp(26px,7vw,36px);margin-bottom:32px}
-  .feat-grid{grid-template-columns:1fr;gap:1px}
   .feat-item{padding:24px 20px}
   .feat-item p{font-size:13px}
   .numbers{padding:48px 0}
@@ -374,6 +378,10 @@ footer p{font-size:12px;color:var(--text-3);line-height:1.7}
       <div class="feat-item"><span class="icon">&#x2328;&#xfe0f;</span><h3>Text expansion</h3><p>Snippets with &#123;&#123;date&#125;&#125;, &#123;&#123;time&#125;&#125;, &#123;&#123;clipboard&#125;&#125; templates. Type less.</p></div>
       <div class="feat-item"><span class="icon">&#x1f512;</span><h3>Privacy first</h3><p>Everything on your Mac. Exclude sensitive apps. Pause anytime. Your clipboard, your rules.</p></div>
       <div class="feat-item"><span class="icon">&#x1f510;</span><h3>Credential vault</h3><p>Right-click any clip and save it as a username or password. Organized by platform, passwords auto-clear from clipboard after 30 seconds.</p></div>
+      <div class="feat-quote">
+        <blockquote>&ldquo;I didn't know I needed this until I had it. Now I can't imagine <em>working without it.</em>&rdquo;</blockquote>
+        <div class="attr">&mdash; a real everclip. user</div>
+      </div>
     </div>
   </div>
 </section>
