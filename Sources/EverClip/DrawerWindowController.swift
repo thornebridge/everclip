@@ -94,6 +94,16 @@ final class DrawerWindowController {
 
     // MARK: - Selection Handling
 
+    /// Called by the panel's Return key handler — always works regardless of SwiftUI focus.
+    func pasteSelectedEntry() {
+        guard let vm = viewModel else { return }
+        let entries = vm.filteredEntries
+        guard !entries.isEmpty else { return }
+        let idx = max(0, min(entries.count - 1, vm.selectedIndex))
+        let entry = entries[idx]
+        select(entry: entry, paste: true)
+    }
+
     func select(entry: ClipboardEntry, paste: Bool) {
         let pb = NSPasteboard.general
         monitor.suppressNext()
@@ -139,6 +149,11 @@ final class DrawerWindowController {
         p.hasShadow = true
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         p.animationBehavior = .utilityWindow
+
+        // Return/Enter key — paste selected entry (bypasses SwiftUI focus issues)
+        p.onReturnKey = { [weak self] in
+            self?.pasteSelectedEntry()
+        }
 
         let vibrancy = NSVisualEffectView(frame: p.contentView!.bounds)
         vibrancy.autoresizingMask = [.width, .height]

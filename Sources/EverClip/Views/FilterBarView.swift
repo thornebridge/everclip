@@ -15,6 +15,12 @@ struct FilterBarView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                     .focused($searchFocused)
+                    .onSubmit {
+                        // Paste selected entry when Enter is pressed in search field
+                        if let entry = viewModel.filteredEntries[safe: viewModel.selectedIndex] {
+                            viewModel.select(entry, paste: true)
+                        }
+                    }
                 if !viewModel.searchText.isEmpty {
                     Button { viewModel.searchText = "" } label: {
                         Image(systemName: "xmark.circle.fill")

@@ -44,12 +44,7 @@ struct DrawerContentView: View {
         }
         .onKeyPress(.leftArrow)  { viewModel.move(-1);  return .handled }
         .onKeyPress(.rightArrow) { viewModel.move(1);   return .handled }
-        .onKeyPress(.return) {
-            if let entry = viewModel.filteredEntries[safe: viewModel.selectedIndex] {
-                viewModel.select(entry, paste: true)
-            }
-            return .handled
-        }
+        // Return/Enter handled at NSPanel level (DrawerPanel.keyDown) to bypass TextField focus
         .onKeyPress(.space) {
             if let entry = viewModel.filteredEntries[safe: viewModel.selectedIndex] {
                 viewModel.quickLookEntry = entry
