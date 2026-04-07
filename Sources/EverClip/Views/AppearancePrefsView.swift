@@ -148,13 +148,5 @@ struct AppearancePrefsView: View {
         }
     }
 
-    private func colorFromHex(_ hex: String) -> Color? {
-        let stripped = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        guard stripped.count == 6, let val = UInt64(stripped, radix: 16) else { return nil }
-        return Color(
-            red: Double((val >> 16) & 0xFF) / 255,
-            green: Double((val >> 8) & 0xFF) / 255,
-            blue: Double(val & 0xFF) / 255
-        )
-    }
+    private func colorFromHex(_ hex: String) -> Color? { Color(hex: hex) }
 }

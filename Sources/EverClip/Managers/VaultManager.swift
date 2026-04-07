@@ -1,12 +1,13 @@
 import Foundation
 import AppKit
 
-/// Persistent credential vault backed by SQLite.
+/// Persistent credential vault backed by encrypted SQLite.
+/// Passwords encrypted with AES-256-GCM, key stored in macOS Keychain.
 /// All data stays local on your Mac — never transmitted, never synced.
-/// Passwords auto-clear from clipboard after 30 seconds.
 final class VaultManager: ObservableObject {
     @Published private(set) var credentials: [Credential] = []
     private let store: CredentialStore
+    private var clearTimer: DispatchWorkItem?
 
     init(store: CredentialStore) {
         self.store = store
@@ -64,12 +65,19 @@ final class VaultManager: ObservableObject {
         pb.clearContents()
         pb.setString(password, forType: .string)
 
+        // Cancel any previous auto-clear timer
+        clearTimer?.cancel()
+
         // Auto-clear password from clipboard after 30 seconds
-        let snapshot = NSPasteboard.general.changeCount
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
+        let snapshot = pb.changeCount
+        let work = DispatchWorkItem { [weak self] in
+            // Only clear if clipboard hasn't been changed since we wrote it
             if NSPasteboard.general.changeCount == snapshot {
                 NSPasteboard.general.clearContents()
             }
+            self?.clearTimer = nil
         }
+        clearTimer = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: work)
     }
 }

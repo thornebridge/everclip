@@ -24,6 +24,13 @@ final class DrawerViewModel: ObservableObject {
     @Published var pinboards: [Pinboard] = []
     @Published var tags: [Tag] = []
 
+    // MARK: - Cached sidebar counts (refreshed on reload, not per-render)
+    @Published var cachedAllCount = 0
+    @Published var cachedFavCount = 0
+    @Published var cachedVaultCount = 0
+    @Published var cachedPinboardCounts: [String: Int] = [:]
+    @Published var cachedTagCounts: [String: Int] = [:]
+
     // MARK: - UI State
     @Published var showPinboardEditor = false
     @Published var editingPinboard: Pinboard? = nil
@@ -58,17 +65,21 @@ final class DrawerViewModel: ObservableObject {
             .sink { [weak self] _ in self?.reloadFilteredEntries() }
             .store(in: &cancellables)
 
-        // Reload immediately when sidebar filter or content type changes
+        // Debounce sidebar/content filters to avoid thrashing on rapid changes
         $sidebarFilter
+            .removeDuplicates()
+            .debounce(for: .milliseconds(50), scheduler: RunLoop.main)
             .sink { [weak self] _ in self?.reloadFilteredEntries() }
             .store(in: &cancellables)
         $contentTypeFilter
+            .removeDuplicates()
+            .debounce(for: .milliseconds(50), scheduler: RunLoop.main)
             .sink { [weak self] _ in self?.reloadFilteredEntries() }
             .store(in: &cancellables)
 
-        // Reload when new clipboard entries arrive (debounced)
+        // Reload when new clipboard entries arrive (debounced to match 0.3s poll)
         monitor.$entries
-            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .sink { [weak self] _ in self?.reloadFilteredEntries() }
             .store(in: &cancellables)
 
@@ -78,6 +89,7 @@ final class DrawerViewModel: ObservableObject {
     func reloadCollections() {
         pinboards = storage.pinboards.loadAll()
         tags = storage.tags.loadAll()
+        refreshCounts()
     }
 
     // MARK: - Filtered entries (DB-backed)
@@ -99,6 +111,17 @@ final class DrawerViewModel: ObservableObject {
             query: query, contentType: ct, isFavorite: fav,
             pinboardID: pbID, tagID: tID, limit: 200
         )
+        refreshCounts()
+    }
+
+    private func refreshCounts() {
+        cachedAllCount = storage.entries.countAll()
+        cachedFavCount = storage.entries.countFavorites()
+        cachedVaultCount = storage.credentials.count()
+        cachedPinboardCounts = Dictionary(uniqueKeysWithValues:
+            pinboards.map { ($0.id, storage.pinboards.entryCount(inPinboard: $0.id)) })
+        cachedTagCounts = Dictionary(uniqueKeysWithValues:
+            tags.map { ($0.id, storage.tags.entryCount(withTag: $0.id)) })
     }
 
     // MARK: - Entry Actions
@@ -203,25 +226,11 @@ final class DrawerViewModel: ObservableObject {
         storage.tags.tagIDs(forEntry: entryID).contains(tagID)
     }
 
-    // MARK: - Counts (DB-backed)
+    // MARK: - Counts (cached)
 
-    func favoriteCount() -> Int {
-        storage.entries.countFavorites()
-    }
-
-    func allItemsCount() -> Int {
-        storage.entries.countAll()
-    }
-
-    func vaultCount() -> Int {
-        storage.credentials.count()
-    }
-
-    func pinboardEntryCount(_ id: String) -> Int {
-        storage.pinboards.entryCount(inPinboard: id)
-    }
-
-    func tagEntryCount(_ id: String) -> Int {
-        storage.tags.entryCount(withTag: id)
-    }
+    func favoriteCount() -> Int { cachedFavCount }
+    func allItemsCount() -> Int { cachedAllCount }
+    func vaultCount() -> Int { cachedVaultCount }
+    func pinboardEntryCount(_ id: String) -> Int { cachedPinboardCounts[id] ?? 0 }
+    func tagEntryCount(_ id: String) -> Int { cachedTagCounts[id] ?? 0 }
 }

@@ -63,7 +63,7 @@ struct DrawerContentView: View {
         }
         .sheet(isPresented: $viewModel.showPinboardEditor) {
             PinboardEditorView(
-                pinboardVM: PinboardViewModel(storage: viewModel.storage),
+                storage: viewModel.storage,
                 existing: viewModel.editingPinboard
             )
             .onDisappear {

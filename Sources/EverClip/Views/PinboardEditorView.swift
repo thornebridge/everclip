@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PinboardEditorView: View {
     @Environment(\.dismiss) private var dismiss
-    let pinboardVM: PinboardViewModel
+    let storage: StorageManager
     var existing: Pinboard?
 
     @State private var name: String = ""
@@ -44,9 +44,10 @@ struct PinboardEditorView: View {
                     if var pb = existing {
                         pb.name = name
                         pb.color = selectedColor
-                        pinboardVM.update(pb)
+                        storage.pinboards.save(pb)
                     } else {
-                        pinboardVM.create(name: name, color: selectedColor, icon: "pin")
+                        let pb = Pinboard(name: name, color: selectedColor)
+                        storage.pinboards.save(pb)
                     }
                     dismiss()
                 }
@@ -64,13 +65,5 @@ struct PinboardEditorView: View {
         }
     }
 
-    private func colorFromHex(_ hex: String) -> Color {
-        let stripped = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        guard let val = UInt64(stripped, radix: 16) else { return .gray }
-        return Color(
-            red:   Double((val >> 16) & 0xFF) / 255,
-            green: Double((val >> 8) & 0xFF) / 255,
-            blue:  Double(val & 0xFF) / 255
-        )
-    }
+    private func colorFromHex(_ hex: String) -> Color { Color(hex: hex) ?? .gray }
 }

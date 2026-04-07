@@ -38,10 +38,12 @@ final class MigrationManager {
         for (version, run) in migrations where version > current {
             db.exec("BEGIN TRANSACTION")
             run()
-            if current == 0 && version == 1 {
-                db.exec("INSERT INTO schema_version (version) VALUES (\(version))")
-            } else {
-                db.exec("UPDATE schema_version SET version = \(version)")
+            if let stmt = db.prepare(current == 0 && version == 1
+                ? "INSERT INTO schema_version (version) VALUES (?)"
+                : "UPDATE schema_version SET version = ?") {
+                db.bindInt(stmt, 1, version)
+                sqlite3_step(stmt)
+                sqlite3_finalize(stmt)
             }
             db.exec("COMMIT")
         }

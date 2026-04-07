@@ -120,11 +120,5 @@ struct QuickLookPreviewView: View {
         if let path = entry.imagePath { fullImage = NSImage(contentsOfFile: path) }
     }
 
-    private func parseColor(_ text: String) -> Color? {
-        let hex = text.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        guard (hex.count == 3 || hex.count == 6), hex.allSatisfy({ $0.isHexDigit }) else { return nil }
-        let expanded = hex.count == 3 ? hex.map { "\($0)\($0)" }.joined() : hex
-        guard let val = UInt64(expanded, radix: 16) else { return nil }
-        return Color(red: Double((val >> 16) & 0xFF) / 255, green: Double((val >> 8) & 0xFF) / 255, blue: Double(val & 0xFF) / 255)
-    }
+    private func parseColor(_ text: String) -> Color? { Color(hex: text) }
 }

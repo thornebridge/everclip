@@ -19,7 +19,8 @@ final class CredentialStore {
         db.bind(stmt, 1, cred.id)
         db.bind(stmt, 2, cred.platform)
         db.bind(stmt, 3, cred.username)
-        db.bind(stmt, 4, cred.password)
+        // Encrypt password before storing
+        db.bind(stmt, 4, cred.password.map { VaultCrypto.encrypt($0) })
         db.bindDouble(stmt, 5, cred.createdAt.timeIntervalSince1970)
         sqlite3_step(stmt)
     }
@@ -31,11 +32,12 @@ final class CredentialStore {
 
         var creds: [Credential] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
+            let encryptedPw = db.col(stmt, 3)
             creds.append(Credential(
                 id: db.col(stmt, 0) ?? UUID().uuidString,
                 platform: db.col(stmt, 1) ?? "",
                 username: db.col(stmt, 2),
-                password: db.col(stmt, 3),
+                password: encryptedPw.map { VaultCrypto.decrypt($0) },
                 createdAt: Date(timeIntervalSince1970: db.colDouble(stmt, 4))
             ))
         }

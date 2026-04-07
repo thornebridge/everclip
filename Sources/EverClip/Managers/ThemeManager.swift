@@ -97,13 +97,13 @@ final class ThemeManager: ObservableObject {
 
     func load(from store: PreferencesStore) {
         self.store = store
-        appearance = AppearanceMode(rawValue: store.get("appearance") ?? "system") ?? .system
-        accentHex = store.get("accentHex") ?? "#00ff87"
-        uiScale = Double(store.get("uiScale") ?? "1.0") ?? 1.0
-        fontScale = Double(store.get("fontScale") ?? "1.0") ?? 1.0
-        cardSize = CardSize(rawValue: store.get("cardSize") ?? "medium") ?? .medium
-        drawerMaterial = DrawerMaterial(rawValue: store.get("drawerMaterial") ?? "hudWindow") ?? .hudWindow
-        drawerCornerRadius = Double(store.get("drawerCornerRadius") ?? "16") ?? 16
+        appearance = AppearanceMode(rawValue: store.get("theme.appearance") ?? "system") ?? .system
+        accentHex = store.get("theme.accentHex") ?? "#00ff87"
+        uiScale = Double(store.get("theme.uiScale") ?? "1.0") ?? 1.0
+        fontScale = Double(store.get("theme.fontScale") ?? "1.0") ?? 1.0
+        cardSize = CardSize(rawValue: store.get("theme.cardSize") ?? "medium") ?? .medium
+        drawerMaterial = DrawerMaterial(rawValue: store.get("theme.drawerMaterial") ?? "hudWindow") ?? .hudWindow
+        drawerCornerRadius = Double(store.get("theme.drawerCornerRadius") ?? "16") ?? 16
         applyAppearance()
     }
 
@@ -124,13 +124,5 @@ final class ThemeManager: ObservableObject {
         }
     }
 
-    private func colorFromHex(_ hex: String) -> Color? {
-        let stripped = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        guard stripped.count == 6, let val = UInt64(stripped, radix: 16) else { return nil }
-        return Color(
-            red: Double((val >> 16) & 0xFF) / 255,
-            green: Double((val >> 8) & 0xFF) / 255,
-            blue: Double(val & 0xFF) / 255
-        )
-    }
+    private func colorFromHex(_ hex: String) -> Color? { Color(hex: hex) }
 }
