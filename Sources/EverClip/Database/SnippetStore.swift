@@ -52,7 +52,10 @@ final class SnippetStore {
     }
 
     func incrementUseCount(id: String) {
-        db.exec("UPDATE snippets SET use_count = use_count + 1 WHERE id = '\(id)'")
+        guard let stmt = db.prepare("UPDATE snippets SET use_count = use_count + 1 WHERE id = ?") else { return }
+        defer { sqlite3_finalize(stmt) }
+        db.bind(stmt, 1, id)
+        sqlite3_step(stmt)
     }
 
     func findByAbbreviation(_ abbrev: String) -> Snippet? {

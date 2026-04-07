@@ -5,7 +5,12 @@ final class DatabaseConnection {
     private(set) var db: OpaquePointer?
 
     init(path: String) {
-        sqlite3_open(path, &db)
+        let rc = sqlite3_open(path, &db)
+        if rc != SQLITE_OK {
+            NSLog("[EverClip] ERROR: Cannot open database at \(path) (code \(rc))")
+            sqlite3_close(db)
+            db = nil
+        }
         exec("PRAGMA journal_mode=WAL")
         exec("PRAGMA synchronous=NORMAL")
         exec("PRAGMA foreign_keys=ON")

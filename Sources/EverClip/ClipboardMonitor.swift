@@ -20,6 +20,7 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     func start() {
+        guard timer == nil else { return }
         timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             self?.poll()
         }

@@ -79,12 +79,14 @@ struct QuickLookPreviewView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
         case .url:
             VStack(alignment: .leading, spacing: 8) {
-                if let text = entry.textContent {
-                    Link(destination: URL(string: text) ?? URL(string: "about:blank")!) {
+                if let text = entry.textContent, let url = URL(string: text) {
+                    Link(destination: url) {
                         Text(text)
                             .font(.system(size: 13))
                             .foregroundStyle(.blue)
                     }
+                } else if let text = entry.textContent {
+                    Text(text).font(.system(size: 13)).textSelection(.enabled)
                 }
             }
         case .markdown:

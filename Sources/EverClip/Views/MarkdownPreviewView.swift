@@ -26,8 +26,7 @@ enum MarkdownRenderer {
         var inCodeBlock = false
         var codeBlockContent: [String] = []
         var inList = false
-        // listType tracking for future ordered/unordered distinction
-        _ = "ul"
+        var listTag = "ul"
 
         for line in lines {
             // Code fences
@@ -37,7 +36,7 @@ enum MarkdownRenderer {
                     codeBlockContent.removeAll()
                     inCodeBlock = false
                 } else {
-                    closeList(&html, &inList)
+                    closeList(&html, &inList, &listTag)
                     inCodeBlock = true
                 }
                 continue
@@ -51,21 +50,21 @@ enum MarkdownRenderer {
 
             // Headings
             if let heading = parseHeading(trimmed) {
-                closeList(&html, &inList)
+                closeList(&html, &inList, &listTag)
                 html.append(heading)
                 continue
             }
 
             // Horizontal rule
             if trimmed == "---" || trimmed == "***" || trimmed == "___" {
-                closeList(&html, &inList)
+                closeList(&html, &inList, &listTag)
                 html.append("<hr/>")
                 continue
             }
 
             // Unordered list
             if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") {
-                if !inList { html.append("<ul>"); inList = true }
+                if !inList { html.append("<ul>"); inList = true; listTag = "ul" }
                 let content = String(trimmed.dropFirst(2))
                 html.append("<li>\(inlineFormat(content))</li>")
                 continue
@@ -73,13 +72,13 @@ enum MarkdownRenderer {
 
             // Ordered list
             if let match = trimmed.range(of: #"^\d+\.\s"#, options: .regularExpression) {
-                if !inList { html.append("<ol>"); inList = true }
+                if !inList { html.append("<ol>"); inList = true; listTag = "ol" }
                 let content = String(trimmed[match.upperBound...])
                 html.append("<li>\(inlineFormat(content))</li>")
                 continue
             }
 
-            closeList(&html, &inList)
+            closeList(&html, &inList, &listTag)
 
             if trimmed.isEmpty {
                 html.append("<br/>")
@@ -88,7 +87,7 @@ enum MarkdownRenderer {
             }
         }
 
-        closeList(&html, &inList)
+        closeList(&html, &inList, &listTag)
         if inCodeBlock {
             html.append("<pre><code>\(codeBlockContent.joined(separator: "\n").escaped)</code></pre>")
         }
@@ -96,9 +95,8 @@ enum MarkdownRenderer {
         return wrapHTML(html.joined(separator: "\n"))
     }
 
-    private static func closeList(_ html: inout [String], _ inList: inout Bool) {
-        // We don't track listType perfectly, so just close whatever is open
-        if inList { html.append("</ul>"); inList = false }
+    private static func closeList(_ html: inout [String], _ inList: inout Bool, _ listTag: inout String) {
+        if inList { html.append("</\(listTag)>"); inList = false; listTag = "ul" }
     }
 
     private static func parseHeading(_ line: String) -> String? {

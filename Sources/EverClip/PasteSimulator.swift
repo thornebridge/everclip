@@ -3,21 +3,30 @@ import ApplicationServices
 import AppKit
 
 enum PasteSimulator {
-    /// Simulates ⌘V into the frontmost application. Requires Accessibility permission.
-    static func paste() {
+    /// Simulates Cmd+V into the frontmost application. Returns true if posted successfully.
+    @discardableResult
+    static func paste() -> Bool {
+        guard AXIsProcessTrusted() else {
+            promptAccessibility()
+            return false
+        }
+
         let src = CGEventSource(stateID: .combinedSessionState)
         let vKeyCode: CGKeyCode = 0x09
 
-        let down = CGEvent(keyboardEventSource: src, virtualKey: vKeyCode, keyDown: true)
-        down?.flags = .maskCommand
-        let up = CGEvent(keyboardEventSource: src, virtualKey: vKeyCode, keyDown: false)
-        up?.flags = .maskCommand
+        guard let down = CGEvent(keyboardEventSource: src, virtualKey: vKeyCode, keyDown: true),
+              let up = CGEvent(keyboardEventSource: src, virtualKey: vKeyCode, keyDown: false) else {
+            return false
+        }
 
-        down?.post(tap: .cghidEventTap)
-        up?.post(tap: .cghidEventTap)
+        down.flags = .maskCommand
+        up.flags = .maskCommand
+        down.post(tap: .cghidEventTap)
+        up.post(tap: .cghidEventTap)
+        return true
     }
 
-    /// Paste as plain text: writes plain text to pasteboard then simulates ⌘V.
+    /// Paste as plain text: writes plain text to pasteboard then simulates Cmd+V.
     static func pasteAsPlainText(monitor: ClipboardMonitor) {
         let pb = NSPasteboard.general
         if let str = pb.string(forType: .string) {
@@ -32,7 +41,6 @@ enum PasteSimulator {
     static func directPaste(entry: ClipboardEntry, monitor: ClipboardMonitor) {
         let pb = NSPasteboard.general
 
-        // Save current clipboard
         let savedTypes = pb.types ?? []
         var savedData: [(NSPasteboard.PasteboardType, Data)] = []
         for type in savedTypes {
@@ -41,7 +49,6 @@ enum PasteSimulator {
             }
         }
 
-        // Write entry
         monitor.suppressNext()
         pb.clearContents()
         if entry.contentType == .image, let path = entry.imagePath,
@@ -53,7 +60,6 @@ enum PasteSimulator {
 
         paste()
 
-        // Restore after a delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             monitor.suppressNext()
             pb.clearContents()
@@ -63,14 +69,18 @@ enum PasteSimulator {
         }
     }
 
-    /// Prompts for Accessibility permissions if not already granted.
+    /// Checks accessibility and prompts if not granted. Returns current status.
     @discardableResult
     static func ensureAccessibility() -> Bool {
         let trusted = AXIsProcessTrusted()
         if !trusted {
-            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
-            AXIsProcessTrustedWithOptions(opts)
+            promptAccessibility()
         }
         return trusted
+    }
+
+    private static func promptAccessibility() {
+        let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+        AXIsProcessTrustedWithOptions(opts)
     }
 }

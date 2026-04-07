@@ -17,7 +17,7 @@ final class DrawerWindowController {
     /// Dynamic drawer height: card height + filter bar + status bar + padding
     private var drawerHeight: CGFloat {
         let cardH = theme.cardSize.height * theme.uiScale
-        let chrome: CGFloat = 90 // filter bar + status bar + dividers + padding
+        let chrome: CGFloat = 90
         return cardH + chrome
     }
     private let edgePadding: CGFloat = 12
@@ -26,6 +26,11 @@ final class DrawerWindowController {
         self.monitor = monitor
         self.storage = monitor.storage
         self.vault = vault
+    }
+
+    deinit {
+        theme.onMaterialChange = nil
+        removeClickOutsideMonitor()
     }
 
     // MARK: - Show / Hide
@@ -51,7 +56,9 @@ final class DrawerWindowController {
 
         guard let panel else { return }
 
-        // Resize panel to current theme dimensions
+        // Always clean up stale monitors before installing new ones
+        removeClickOutsideMonitor()
+
         panel.setFrame(startFrame, display: false)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -86,6 +93,11 @@ final class DrawerWindowController {
             panel.orderOut(nil)
             if andPaste { self?.activateAndPaste() }
         })
+
+        // Safety: ensure panel is hidden even if animation completion doesn't fire
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak panel] in
+            if panel?.isVisible == true { panel?.orderOut(nil) }
+        }
     }
 
     func toggle() {
@@ -109,12 +121,17 @@ final class DrawerWindowController {
         monitor.suppressNext()
         pb.clearContents()
 
+        var didWrite = false
         if entry.contentType == .image, let path = entry.imagePath,
            let image = NSImage(contentsOfFile: path) {
             pb.writeObjects([image])
+            didWrite = true
         } else if let text = entry.textContent {
             pb.setString(text, forType: .string)
+            didWrite = true
         }
+
+        guard didWrite else { return }
 
         if paste {
             hide(andPaste: true)
@@ -155,14 +172,16 @@ final class DrawerWindowController {
             self?.pasteSelectedEntry()
         }
 
-        let vibrancy = NSVisualEffectView(frame: p.contentView!.bounds)
+        guard let contentView = p.contentView else { return }
+
+        let vibrancy = NSVisualEffectView(frame: contentView.bounds)
         vibrancy.autoresizingMask = [.width, .height]
         vibrancy.material = theme.drawerMaterial.nsMaterial
         vibrancy.state = .active
         vibrancy.wantsLayer = true
         vibrancy.layer?.cornerRadius = theme.drawerCornerRadius
         vibrancy.layer?.masksToBounds = true
-        p.contentView?.addSubview(vibrancy)
+        contentView.addSubview(vibrancy)
         vibrancyView = vibrancy
 
         theme.onMaterialChange = { [weak self] in
@@ -178,31 +197,35 @@ final class DrawerWindowController {
         vm.onDismiss = { [weak self] in self?.hide() }
         viewModel = vm
 
-        let contentView = DrawerContentView(viewModel: vm)
+        let swiftUIContent = DrawerContentView(viewModel: vm)
             .environmentObject(theme)
-        let hosting = NSHostingView(rootView: contentView)
-        hosting.frame = p.contentView!.bounds
+        let hosting = NSHostingView(rootView: swiftUIContent)
+        hosting.frame = contentView.bounds
         hosting.autoresizingMask = [.width, .height]
-        p.contentView?.addSubview(hosting)
+        contentView.addSubview(hosting)
 
         panel = p
     }
 
     private func activateAndPaste() {
-        // Re-activate the previous app, with fallback
         if let prev = previousApp, !prev.isTerminated {
             prev.activate()
         }
 
-        // Longer delay to ensure the target app is focused and ready
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            PasteSimulator.paste()
+            if !PasteSimulator.paste() {
+                // Accessibility denied — re-prompt
+                PasteSimulator.ensureAccessibility()
+            }
         }
     }
 
     private func screenUnderMouse() -> NSScreen {
         let loc = NSEvent.mouseLocation
-        return NSScreen.screens.first { NSMouseInRect(loc, $0.frame, false) } ?? NSScreen.main ?? NSScreen.screens[0]
+        return NSScreen.screens.first { NSMouseInRect(loc, $0.frame, false) }
+            ?? NSScreen.main
+            ?? NSScreen.screens.first
+            ?? NSScreen()
     }
 
     private func installClickOutsideMonitor() {

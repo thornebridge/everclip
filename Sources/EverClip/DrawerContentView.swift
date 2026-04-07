@@ -83,6 +83,12 @@ struct DrawerContentView: View {
                     field: field,
                     vault: viewModel.vault
                 )
+            } else {
+                // Safety: dismiss if missing data
+                Text("").onAppear {
+                    viewModel.credentialSaveEntry = nil
+                    viewModel.credentialSaveField = nil
+                }
             }
         }
     }
