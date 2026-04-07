@@ -61,16 +61,12 @@ final class DrawerWindowController {
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        // Animate FIRST — smooth slide up with no main thread contention
-        NSAnimationContext.runAnimationGroup({ ctx in
+        // Data is already live via Combine subscriptions — just animate
+        NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.22
             ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
             panel.animator().setFrame(endFrame, display: true)
-        }, completionHandler: { [weak self] in
-            // Load data AFTER animation completes — no jitter
-            self?.viewModel?.reloadCollections()
-            self?.viewModel?.reloadFilteredEntries()
-        })
+        }
 
         installClickOutsideMonitor()
     }

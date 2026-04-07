@@ -78,7 +78,10 @@ final class DrawerViewModel: ObservableObject {
         // Reload when new clipboard entries arrive (debounced to match 0.3s poll)
         monitor.$entries
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .sink { [weak self] _ in self?.reloadFilteredEntries() }
+            .sink { [weak self] _ in
+                self?.countsStale = true
+                self?.reloadFilteredEntries()
+            }
             .store(in: &cancellables)
 
         reloadFilteredEntries()
@@ -90,32 +93,61 @@ final class DrawerViewModel: ObservableObject {
         refreshCounts()
     }
 
-    // MARK: - Filtered entries (DB-backed)
+    // MARK: - Filtered entries
 
+    /// Uses in-memory entries when no filters are active (instant).
+    /// Falls back to DB queries only when filters require it.
     func reloadFilteredEntries() {
-        let query = searchText.isEmpty ? nil : searchText
-        let ct = contentTypeFilter?.rawValue
+        let hasSearch = !searchText.isEmpty
+        let hasTypeFilter = contentTypeFilter != nil
+        let needsDB: Bool
+        switch sidebarFilter {
+        case .all:       needsDB = hasSearch || hasTypeFilter
+        case .favorites: needsDB = true
+        case .pinboard:  needsDB = true
+        case .tag:       needsDB = true
+        case .vault:     needsDB = false // vault has its own view
+        }
 
-        let fav: Bool?
-        if case .favorites = sidebarFilter { fav = true } else { fav = nil }
+        if needsDB {
+            // Complex filter — query the DB
+            let query = hasSearch ? searchText : nil
+            let ct = contentTypeFilter?.rawValue
+            let fav: Bool? = sidebarFilter == .favorites ? true : nil
+            let pbID: String?
+            if case .pinboard(let id) = sidebarFilter { pbID = id } else { pbID = nil }
+            let tID: String?
+            if case .tag(let id) = sidebarFilter { tID = id } else { tID = nil }
 
-        let pbID: String?
-        if case .pinboard(let id) = sidebarFilter { pbID = id } else { pbID = nil }
+            filteredEntries = storage.entries.search(
+                query: query, contentType: ct, isFavorite: fav,
+                pinboardID: pbID, tagID: tID, limit: 200
+            )
+        } else if case .vault = sidebarFilter {
+            filteredEntries = []
+        } else {
+            // No filters — use the in-memory entries directly (zero DB cost)
+            var result = monitor.entries
+            if hasTypeFilter, let type = contentTypeFilter {
+                result = result.filter { $0.contentType == type }
+            }
+            filteredEntries = result
+        }
 
-        let tID: String?
-        if case .tag(let id) = sidebarFilter { tID = id } else { tID = nil }
-
-        filteredEntries = storage.entries.search(
-            query: query, contentType: ct, isFavorite: fav,
-            pinboardID: pbID, tagID: tID, limit: 200
-        )
         refreshCounts()
     }
 
+    private var countsStale = true
+
+    func invalidateCounts() { countsStale = true }
+
     private func refreshCounts() {
-        cachedAllCount = storage.entries.countAll()
-        cachedFavCount = storage.entries.countFavorites()
-        cachedVaultCount = storage.credentials.count()
+        guard countsStale else { return }
+        countsStale = false
+        cachedAllCount = monitor.entries.count  // Free — in-memory
+        cachedFavCount = monitor.entries.filter { $0.isFavorite }.count  // Fast on 500 items
+        cachedVaultCount = vault.count
+        // Only query DB for pinboard/tag counts (junction tables)
         cachedPinboardCounts = Dictionary(uniqueKeysWithValues:
             pinboards.map { ($0.id, storage.pinboards.entryCount(inPinboard: $0.id)) })
         cachedTagCounts = Dictionary(uniqueKeysWithValues:
